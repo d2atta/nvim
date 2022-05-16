@@ -1,0 +1,1 @@
+/home/devildev/.cache/wal/colors.lua
