@@ -1,23 +1,26 @@
-local null_ls = require "null-ls"
-local b = null_ls.builtins
+local null_ls = require("null-ls")
+local formatting = null_ls.builtins.formatting
+local completion = null_ls.builtins.completion
+local diagnostics = null_ls.builtins.diagnostics
 
 local sources = {
-   -- Shell
-   b.diagnostics.shellcheck.with { diagnostics_format = "#{m} [#{c}]" },
-   b.formatting.prettier.with { filetypes = { "json", "yaml", "markdown"}},
-   b.formatting.black,
-   -- b.formatting.rustfmt,
-   -- b.formatting.clang_format,
-   -- b.formatting.codespell,
+	completion.luasnip,
+	diagnostics.shellcheck.with({ diagnostics_format = "#{m} [#{c}]" }),
+	formatting.black.with({ extra_args = { "--fast" } }),
+	formatting.stylua,
+	-- formatting.prettier.with({ extra_args = { "--no-semi", "--single" } }),
+	-- formatting.rustfmt,
+	-- formatting.clang_format,
+	-- formatting.codespell,
 }
 
-null_ls.setup {
-debug = true,
-sources = sources,
--- format on save
-on_attach = function(client)
- if client.resolved_capabilities.document_formatting then
-    vim.cmd "autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()"
- end
-end,
-}
+null_ls.setup({
+	debug = false,
+	sources = sources,
+	-- format on save
+	on_attach = function(client)
+		if client.resolved_capabilities.document_formatting then
+			vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()")
+		end
+	end,
+})

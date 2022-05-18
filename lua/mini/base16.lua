@@ -1,9 +1,87 @@
-local Base16 = {}
+-- MIT License Copyright (c) 2021 Evgeni Chasnovski
+
+-- Documentation ==============================================================
+--- Minimal and fast Lua module which implements
+--- [base16](http://chriskempson.com/projects/base16/) color scheme (with
+--- Copyright (C) 2012 Chris Kempson) adapated for modern Neovim 0.5 Lua
+--- plugins. Extra features:
+--- - Configurable automatic support of cterm colors (see |highlight-cterm|).
+--- - Opinionated palette generator based only on background and foreground
+---   colors.
+---
+--- # Setup~
+---
+--- This module needs a setup with `require('mini.base16').setup({})` (replace
+--- `{}` with your `config` table). It will create global Lua table
+--- `MiniBase16` which you can use for scripting or manually (with
+--- `:lua MiniBase16.*`).
+---
+--- See |MiniBase16.config| for `config` structure and default values.
+---
+--- Example:
+--- >
+---   require('mini.base16').setup({
+---     palette = {
+---       base00 = '#112641',
+---       base01 = '#3a475e',
+---       base02 = '#606b81',
+---       base03 = '#8691a7',
+---       base04 = '#d5dc81',
+---       base05 = '#e2e98f',
+---       base06 = '#eff69c',
+---       base07 = '#fcffaa',
+---       base08 = '#ffcfa0',
+---       base09 = '#cc7e46',
+---       base0A = '#46a436',
+---       base0B = '#9ff895',
+---       base0C = '#ca6ecf',
+---       base0D = '#42f7ff',
+---       base0E = '#ffc4ff',
+---       base0F = '#00a5c5',
+---     },
+---     use_cterm = true,
+---   })
+--- <
+--- # Notes~
+---
+--- 1. This module is used to create plugin's colorscheme (see |minischeme|).
+--- 2. Using `setup()` doesn't actually create a |colorscheme|. It basically
+---    creates a coordinated set of |highlight|s. To create your own theme:
+---     - Put "myscheme.lua" file (name after your chosen theme name) inside
+---       any "colors" directory reachable from 'runtimepath' ("colors" inside
+---       your Neovim config directory is usually enough).
+---     - Inside "myscheme.lua" call `require('mini.base16').setup()` with your
+---       palette and only after that set |g:colors_name| to "myscheme".
+---@tag mini.base16
+---@tag MiniBase16
+---@toc_entry Base16 colorscheme creation
+
+-- Module definition ==========================================================
+local MiniBase16 = {}
 local H = {}
 
-function Base16.setup(config)
+--- Module setup
+---
+--- Setup is done by applying base16 palette to enable colorscheme. Highlight
+--- groups make an extended set from original
+--- [base16-vim](https://github.com/chriskempson/base16-vim/) plugin. It is a
+--- good idea to have `config.palette` respect the original [styling
+--- principles](https://github.com/chriskempson/base16/blob/master/styling.md).
+---
+--- By default only 'gui highlighting' (see |highlight-gui| and
+--- |termguicolors|) is supported. To support 'cterm highlighting' (see
+--- |highlight-cterm|) supply `config.use_cterm` argument in one of the formats:
+--- - `true` to auto-generate from `palette` (as closest colors).
+--- - Table with similar structure to `palette` but having terminal colors
+---   (integers from 0 to 255) instead of hex strings.
+---
+---@param config table Module config table. See |MiniBase16.config|.
+---
+---@usage `require('mini.base16').setup({})` (replace `{}` with your `config`
+---   table; `config.palette` should be a table with colors)
+function MiniBase16.setup(config)
   -- Export module
-  _G.Base16 = Base16
+  _G.MiniBase16 = MiniBase16
 
   -- Setup config
   config = H.setup_config(config)
@@ -12,16 +90,80 @@ function Base16.setup(config)
   H.apply_config(config)
 end
 
-Base16.config = {
+--- Module config
+---
+--- Default values:
+---@eval return MiniDoc.afterlines_to_code(MiniDoc.current.eval_section)
+MiniBase16.config = {
+  -- Table with names from `base00` to `base0F` and values being strings of
+  -- HEX colors with format "#RRGGBB". NOTE: this should be explicitly
+  -- supplied in `setup()`.
   palette = nil,
+
+  -- Whether to support cterm colors. Can be boolean, `nil` (same as
+  -- `false`), or table with cterm colors. See `setup()` documentation for
+  -- more information.
   use_cterm = nil,
 }
+--minidoc_afterlines_end
 
-function Base16.base16_palette(background, foreground, accent_chroma)
+-- Module functionality =======================================================
+--- Create 'mini' palette
+---
+--- Create base16 palette based on the HEX (string '#RRGGBB') colors of main
+--- background and foreground with optional setting of accent chroma (see
+--- details).
+---
+--- # Algorithm design~
+---
+--- - Main operating color space is
+---   [CIELCh(uv)](https://en.wikipedia.org/wiki/CIELUV#Cylindrical_representation_(CIELCh))
+---   which is a cylindrical representation of a perceptually uniform CIELUV
+---   color space. It defines color by three values: lightness L (values from 0
+---   to 100), chroma (positive values), and hue (circular values from 0 to 360
+---   degress). Useful converting tool: https://www.easyrgb.com/en/convert.php
+--- - There are four important lightness values: background, foreground, focus
+---   (around the middle of background and foreground, leaning towards
+---   foreground), and edge (extreme lightness closest to foreground).
+--- - First four colors have the same chroma and hue as `background` but
+---   lightness progresses from background towards focus.
+--- - Second four colors have the same chroma and hue as `foreground` but
+---   lightness progresses from foreground towards edge in such a way that
+---   'base05' color is main foreground color.
+--- - The rest eight colors are accent colors which are created in pairs
+---     - Each pair has same hue from set of hues 'most different' to
+---       background and foreground hues (if respective chorma is positive).
+---     - All colors have the same chroma equal to `accent_chroma` (if not
+---       provided, chroma of foreground is used, as they will appear next
+---       to each other). Note: this means that in case of low foreground
+---       chroma, it is a good idea to set `accent_chroma` manually.
+---       Values from 30 (low chorma) to 80 (high chroma) are common.
+---     - Within pair there is base lightness (equal to foreground
+---       lightness) and alternative (equal to focus lightness). Base
+---       lightness goes to colors which will be used more frequently in
+---       code: base08 (variables), base0B (strings), base0D (functions),
+---       base0E (keywords).
+---   How exactly accent colors are mapped to base16 palette is a result of
+---   trial and error. One rule of thumb was: colors within one hue pair should
+---   be more often seen next to each other. This is because it is easier to
+---   distinguish them and seems to be more visually appealing. That is why
+---   `base0D` and `base0F` have same hues because they usually represent
+---   functions and delimiter (brackets included).
+---
+---@param background string Background HEX color (formatted as `#RRGGBB`).
+---@param foreground string Foreground HEX color (formatted as `#RRGGBB`).
+---@param accent_chroma number Optional positive number (usually between 0
+---   and 100). Default: chroma of foreground color.
+---
+---@return table Table with base16 palette.
+---
+---@usage `local palette = require('mini.base16').mini_palette('#112641', '#e2e98f', 75)`
+--- `require('mini.base16').setup({palette = palette})`
+function MiniBase16.mini_palette(background, foreground, accent_chroma)
   H.validate_hex(background, 'background')
   H.validate_hex(foreground, 'foreground')
   if accent_chroma and not (type(accent_chroma) == 'number' and accent_chroma >= 0) then
-    error('(base16.base16) `accent_chroma` should be a positive number or `nil`.')
+    error('(mini.base16) `accent_chroma` should be a positive number or `nil`.')
   end
   local bg, fg = H.hex2lch(background), H.hex2lch(foreground)
   accent_chroma = accent_chroma or fg.c
@@ -50,8 +192,9 @@ function Base16.base16_palette(background, foreground, accent_chroma)
   palette[8] = { l = fg.l + 2 * fg_step, c = fg.c, h = fg.h }
 
   -- Accent colors
-  ---- Only try to avoid color if it has positive chroma, because with zero
-  ---- chroma hue is meaningless (as in polar coordinates)
+
+  -- Only try to avoid color if it has positive chroma, because with zero
+  -- chroma hue is meaningless (as in polar coordinates)
   local present_hues = {}
   if bg.c > 0 then
     table.insert(present_hues, bg.h)
@@ -83,7 +226,15 @@ function Base16.base16_palette(background, foreground, accent_chroma)
   return base16_palette
 end
 
-function Base16.rgb_palette_to_cterm_palette(palette)
+--- Converts palette with RGB colors to terminal colors
+---
+--- Useful for caching `use_cterm` variable to increase speed.
+---
+---@param palette table Table with base16 palette (same as in
+---   `MiniBase16.config.palette`).
+---
+---@return table Table with base16 palette using |highlight-cterm|.
+function MiniBase16.rgb_palette_to_cterm_palette(palette)
   H.validate_base16_palette(palette, 'palette')
 
   -- Create cterm palette only when it is needed to decrease load time
@@ -94,11 +245,12 @@ function Base16.rgb_palette_to_cterm_palette(palette)
   end, palette)
 end
 
--- Helpers
----- Module default config
-H.default_config = Base16.config
+-- Helper data ================================================================
+-- Module default config
+H.default_config = MiniBase16.config
 
----- Settings
+-- Helper functionality =======================================================
+-- Settings -------------------------------------------------------------------
 function H.setup_config(config)
   -- General idea: if some table elements are not present in user-supplied
   -- `config`, take them from default config
@@ -113,12 +265,12 @@ function H.setup_config(config)
 end
 
 function H.apply_config(config)
-  Base16.config = config
+  MiniBase16.config = config
 
   H.apply_palette(config.palette, config.use_cterm)
 end
 
----- Validators
+-- Validators -----------------------------------------------------------------
 H.base16_names = {
   'base00',
   'base01',
@@ -140,16 +292,16 @@ H.base16_names = {
 
 function H.validate_base16_palette(x, x_name)
   if type(x) ~= 'table' then
-    error(string.format('(base16.base16) `%s` is not a table.', x_name))
+    error(string.format('(mini.base16) `%s` is not a table.', x_name))
   end
 
   for _, color_name in pairs(H.base16_names) do
     local c = x[color_name]
     if c == nil then
-      local msg = string.format('(base16.base16) `%s` does not have value %s.', x_name, color_name)
+      local msg = string.format('(mini.base16) `%s` does not have value %s.', x_name, color_name)
       error(msg)
     end
-    H.validate_hex(c, string.format('config.palette[%s]', color_name))
+    H.validate_hex(c, string.format('%s.%s', x_name, color_name))
   end
 
   return true
@@ -161,18 +313,18 @@ function H.validate_use_cterm(x, x_name)
   end
 
   if type(x) ~= 'table' then
-    local msg = string.format('(base16.base16) `%s` should be boolean or table with cterm colors.', x_name)
+    local msg = string.format('(mini.base16) `%s` should be boolean or table with cterm colors.', x_name)
     error(msg)
   end
 
   for _, color_name in pairs(H.base16_names) do
     local c = x[color_name]
     if c == nil then
-      local msg = string.format('(base16.base16) `%s` does not have value %s.', x_name, color_name)
+      local msg = string.format('(mini.base16) `%s` does not have value %s.', x_name, color_name)
       error(msg)
     end
     if not (type(c) == 'number' and 0 <= c and c <= 255) then
-      local msg = string.format('(base16.base16) `%s.%s` is not a cterm color.', x_name, color_name)
+      local msg = string.format('(mini.base16) `%s.%s` is not a cterm color.', x_name, color_name)
       error(msg)
     end
   end
@@ -184,14 +336,14 @@ function H.validate_hex(x, x_name)
   local is_hex = type(x) == 'string' and x:len() == 7 and x:sub(1, 1) == '#' and (tonumber(x:sub(2), 16) ~= nil)
 
   if not is_hex then
-    local msg = string.format('(base16.base16) `%s` is not a HEX color (string "#RRGGBB").', x_name)
+    local msg = string.format('(mini.base16) `%s` is not a HEX color (string "#RRGGBB").', x_name)
     error(msg)
   end
 
   return true
 end
 
----- Highlighting
+-- Highlighting ---------------------------------------------------------------
 function H.apply_palette(palette, use_cterm)
   -- Prepare highlighting application. Notes:
   -- - Clear current highlight only if other theme was loaded previously.
@@ -225,14 +377,15 @@ function H.apply_palette(palette, use_cterm)
   hi('DiffDelete',   {fg=p.base08, bg=p.base01, attr=nil,         sp=nil})
   hi('DiffText',     {fg=p.base0D, bg=p.base01, attr=nil,         sp=nil})
   hi('Directory',    {fg=p.base0D, bg=nil,      attr=nil,         sp=nil})
-  hi('EndOfBuffer',  {fg=p.base00, bg=nil,      attr=nil,         sp=nil})
+  hi('EndOfBuffer',  {fg=p.base03, bg=nil,      attr=nil,         sp=nil})
   hi('ErrorMsg',     {fg=p.base08, bg=p.base00, attr=nil,         sp=nil})
   hi('FoldColumn',   {fg=p.base0C, bg=p.base01, attr=nil,         sp=nil})
   hi('Folded',       {fg=p.base03, bg=p.base01, attr=nil,         sp=nil})
   hi('IncSearch',    {fg=p.base01, bg=p.base09, attr=nil,         sp=nil})
-  hi('LineNr',       {fg=p.base03, bg=p.base00, attr=nil,         sp=nil})
-  ---- Slight difference from base16, where `bg=base03` is used. This makes
-  ---- it possible to comfortably see this highlighting in comments.
+  hi('LineNr',       {fg=p.base03, bg=p.base01, attr=nil,         sp=nil})
+  hi('WinSeparator',{fg=nil,    bg=nil,      attr=nil,         sp=nil})
+  -- Slight difference from base16, where `bg=base03` is used. This makes
+  -- it possible to comfortably see this highlighting in comments.
   hi('MatchParen',   {fg=nil,      bg=p.base02, attr=nil,         sp=nil})
   hi('ModeMsg',      {fg=p.base0B, bg=nil,      attr=nil,         sp=nil})
   hi('MoreMsg',      {fg=p.base0B, bg=nil,      attr=nil,         sp=nil})
@@ -249,7 +402,7 @@ function H.apply_palette(palette, use_cterm)
   hi('Question',     {fg=p.base0D, bg=nil,      attr=nil,         sp=nil})
   hi('QuickFixLine', {fg=nil,      bg=p.base01, attr=nil,         sp=nil})
   hi('Search',       {fg=p.base01, bg=p.base0A, attr=nil,         sp=nil})
-  hi('SignColumn',   {fg=p.base03, bg=p.base00, attr=nil,         sp=nil})
+  hi('SignColumn',   {fg=p.base03, bg=p.base01, attr=nil,         sp=nil})
   hi('SpecialKey',   {fg=p.base03, bg=nil,      attr=nil,         sp=nil})
   hi('SpellBad',     {fg=nil,      bg=nil,      attr='undercurl', sp=p.base08})
   hi('SpellCap',     {fg=nil,      bg=nil,      attr='undercurl', sp=p.base0D})
@@ -346,15 +499,15 @@ function H.apply_palette(palette, use_cterm)
     hi('DiagnosticInfo',  {fg=p.base0C, bg=p.base00, attr=nil, sp=nil})
     hi('DiagnosticWarn',  {fg=p.base0E, bg=p.base00, attr=nil, sp=nil})
 
-    hi('DiagnosticFloatingError', {fg=p.base08, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticFloatingHint',  {fg=p.base0D, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticFloatingInfo',  {fg=p.base0C, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticFloatingWarn',  {fg=p.base0E, bg=p.base00, attr=nil, sp=nil})
+    hi('DiagnosticFloatingError', {fg=p.base08, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticFloatingHint',  {fg=p.base0D, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticFloatingInfo',  {fg=p.base0C, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticFloatingWarn',  {fg=p.base0E, bg=p.base01, attr=nil, sp=nil})
 
-    hi('DiagnosticSignError', {fg=p.base08, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticSignHint',  {fg=p.base0D, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticSignInfo',  {fg=p.base0C, bg=p.base00, attr=nil, sp=nil})
-    hi('DiagnosticSignWarn',  {fg=p.base0E, bg=p.base00, attr=nil, sp=nil})
+    hi('DiagnosticSignError', {fg=p.base08, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticSignHint',  {fg=p.base0D, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticSignInfo',  {fg=p.base0C, bg=p.base01, attr=nil, sp=nil})
+    hi('DiagnosticSignWarn',  {fg=p.base0E, bg=p.base01, attr=nil, sp=nil})
 
     hi('DiagnosticUnderlineError', {fg=nil, bg=nil, attr='underline', sp=p.base08})
     hi('DiagnosticUnderlineHint',  {fg=nil, bg=nil, attr='underline', sp=p.base0D})
@@ -383,10 +536,14 @@ function H.apply_palette(palette, use_cterm)
   end
 
   -- Plugins
-  ---- 'base16'
+  -- 'mini'
   hi('MiniCompletionActiveParameter', {fg=nil, bg=nil, attr='underline', sp=nil})
 
-  hi('MiniCursorword', {fg=nil, bg=nil, attr='underline', sp=nil})
+  hi('MiniCursorword',        {fg=nil, bg=nil, attr='underline', sp=nil})
+  hi('MiniCursorwordCurrent', {fg=nil, bg=nil, attr='underline', sp=nil})
+
+  hi('MiniIndentscopeSymbol', {fg=p.base0F, bg=nil, attr=nil,         sp=nil})
+  hi('MiniIndentscopePrefix', {fg=nil,      bg=nil, attr='nocombine', sp=nil})
 
   hi('MiniJump', {fg=nil, bg=nil, attr='undercurl', sp=p.base0E})
 
@@ -400,9 +557,9 @@ function H.apply_palette(palette, use_cterm)
   hi('MiniStarterSection',    {fg=p.base0F, bg=nil, attr=nil, sp=nil})
   hi('MiniStarterQuery',      {fg=p.base0B, bg=nil, attr=nil, sp=nil})
 
-  hi('MiniStatuslineDevinfo',     {fg=p.base04, bg=p.base02, attr=nil,    sp=nil})
-  hi('MiniStatuslineFileinfo',    {fg=p.base04, bg=p.base02, attr=nil,    sp=nil})
-  hi('MiniStatuslineFilename',    {fg=p.base03, bg=p.base01, attr=nil,    sp=nil})
+  hi('MiniStatuslineDevinfo',     {fg=p.base04, bg=p.base01, attr=nil,    sp=nil})
+  hi('MiniStatuslineFileinfo',    {fg=p.base04, bg=p.base01, attr=nil,    sp=nil})
+  hi('MiniStatuslineFilename',    {fg=p.base03, bg=p.base02, attr=nil,    sp=nil})
   hi('MiniStatuslineInactive',    {fg=p.base03, bg=p.base01, attr=nil,    sp=nil})
   hi('MiniStatuslineModeCommand', {fg=p.base00, bg=p.base08, attr='bold', sp=nil})
   hi('MiniStatuslineModeInsert',  {fg=p.base00, bg=p.base0D, attr='bold', sp=nil})
@@ -419,11 +576,12 @@ function H.apply_palette(palette, use_cterm)
   hi('MiniTablineModifiedCurrent', {fg=p.base02, bg=p.base05, attr='bold', sp=nil})
   hi('MiniTablineModifiedHidden',  {fg=p.base01, bg=p.base04, attr=nil,    sp=nil})
   hi('MiniTablineModifiedVisible', {fg=p.base02, bg=p.base04, attr='bold', sp=nil})
+  hi('MiniTablineTabpagesection',  {fg=p.base01, bg=p.base0A, attr='bold', sp=nil})
   hi('MiniTablineVisible',         {fg=p.base05, bg=p.base01, attr='bold', sp=nil})
 
   hi('MiniTrailspace', {fg=p.base00, bg=p.base08, attr=nil, sp=nil})
 
-  ---- kyazdani42/nvim-tree.lua (only unlinked highlight groups)
+  -- kyazdani42/nvim-tree.lua (only unlinked highlight groups)
   hi('NvimTreeExecFile',     { fg=p.base0B, bg=nil,      attr='bold',           sp=nil })
   hi('NvimTreeFolderIcon',   { fg=p.base03, bg=nil,      attr=nil,              sp=nil })
   hi('NvimTreeGitDeleted',   { fg=p.base08, bg=nil,      attr=nil,              sp=nil })
@@ -440,18 +598,18 @@ function H.apply_palette(palette, use_cterm)
   hi('NvimTreeSymlink',      { fg=p.base0F, bg=nil,      attr='bold',           sp=nil })
   hi('NvimTreeWindowPicker', { fg=p.base05, bg=p.base01, attr="bold",           sp=nil })
 
-  ---- lewis6991/gitsigns.nvim
+  -- lewis6991/gitsigns.nvim
   hi('GitSignsAdd',    {fg=p.base0B, bg=p.base01, attr=nil, sp=nil})
   hi('GitSignsChange', {fg=p.base03, bg=p.base01, attr=nil, sp=nil})
   hi('GitSignsDelete', {fg=p.base08, bg=p.base01, attr=nil, sp=nil})
 
-  ---- nvim-telescope/telescope.nvim
+  -- nvim-telescope/telescope.nvim
   hi('TelescopeBorder',         {fg=p.base0F, bg=nil,      attr=nil,    sp=nil}) -- as in 'Delimiter'
   hi('TelescopeMatching',       {fg=p.base0A, bg=nil,      attr=nil,    sp=nil}) -- as in 'Search'
   hi('TelescopeMultiSelection', {fg=nil,      bg=p.base01, attr='bold', sp=nil})
   hi('TelescopeSelection',      {fg=nil,      bg=p.base01, attr='bold', sp=nil})
 
-  ---- folke/which-key.nvim
+  -- folke/which-key.nvim
   hi('WhichKey',          {fg=p.base0D, bg=nil,      attr=nil, sp=nil})
   hi('WhichKeyDesc',      {fg=p.base05, bg=nil,      attr=nil, sp=nil})
   hi('WhichKeyFloat',     {fg=p.base05, bg=p.base01, attr=nil, sp=nil})
@@ -515,11 +673,11 @@ function H.highlight_both(group, args)
   vim.cmd(command)
 end
 
----- Compound (gui and cterm) palette
+-- Compound (gui and cterm) palette -------------------------------------------
 function H.make_compound_palette(palette, use_cterm)
   local cterm_table = use_cterm
   if type(use_cterm) == 'boolean' then
-    cterm_table = Base16.rgb_palette_to_cterm_palette(palette)
+    cterm_table = MiniBase16.rgb_palette_to_cterm_palette(palette)
   end
 
   local res = {}
@@ -529,9 +687,8 @@ function H.make_compound_palette(palette, use_cterm)
   return res
 end
 
----- Optimal scales
----- Make a set of equally spaced hues which are as different to present hues
----- as possible
+-- Optimal scales. Make a set of equally spaced hues which are as different to
+-- present hues as possible
 function H.make_different_hues(present_hues, n)
   local max_offset = math.floor(360 / n + 0.5)
 
@@ -541,7 +698,7 @@ function H.make_different_hues(present_hues, n)
   for offset = 0, max_offset - 1, 1 do
     new_hues = H.make_hue_scale(n, offset)
 
-    -- Compute distance as usual 'base16mum distance' between two sets
+    -- Compute distance as usual 'minimum distance' between two sets
     dist = H.dist_circle_set(new_hues, present_hues)
 
     -- Decide if it is the best
@@ -562,10 +719,10 @@ function H.make_hue_scale(n, offset)
   return res
 end
 
----- Terminal colors
----- Sources:
----- - https://github.com/shawncplus/Vim-toCterm/blob/master/lib/Xterm.php
----- - https://gist.github.com/MicahElliott/719710
+-- Terminal colors ------------------------------------------------------------
+-- Sources:
+-- - https://github.com/shawncplus/Vim-toCterm/blob/master/lib/Xterm.php
+-- - https://gist.github.com/MicahElliott/719710
 -- stylua: ignore start
 H.cterm_first16 = {
   { r = 0,   g = 0,   b = 0 },
@@ -616,10 +773,11 @@ function H.ensure_cterm_palette()
   end
 end
 
----- Color conversion
----- Source: https://www.easyrgb.com/en/math.php
----- Accuracy is usually around 2-3 decimal digits, which should be fine
------- HEX <-> CIELCh(uv)
+-- Color conversion -----------------------------------------------------------
+-- Source: https://www.easyrgb.com/en/math.php
+-- Accuracy is usually around 2-3 decimal digits, which should be fine
+
+-- HEX <-> CIELCh(uv)
 function H.hex2lch(hex)
   local res = hex
   for _, f in pairs({ H.hex2rgb, H.rgb2xyz, H.xyz2luv, H.luv2lch }) do
@@ -636,7 +794,7 @@ function H.lch2hex(lch)
   return res
 end
 
------- HEX <-> RGB
+-- HEX <-> RGB
 function H.hex2rgb(hex)
   local dec = tonumber(hex:sub(2), 16)
 
@@ -657,7 +815,7 @@ function H.rgb2hex(rgb)
   return '#' .. string.format('%02x', t.r) .. string.format('%02x', t.g) .. string.format('%02x', t.b)
 end
 
------- RGB <-> XYZ
+-- RGB <-> XYZ
 function H.rgb2xyz(rgb)
   local t = vim.tbl_map(function(c)
     c = c / 255
@@ -699,8 +857,8 @@ function H.xyz2rgb(xyz)
   })
 end
 
------- XYZ <-> CIELuv
--------- Using white reference for D65 and 2 degress
+-- XYZ <-> CIELuv
+-- Using white reference for D65 and 2 degress
 H.ref_u = (4 * 95.047) / (95.047 + (15 * 100) + (3 * 108.883))
 H.ref_v = (9 * 100) / (95.047 + (15 * 100) + (3 * 108.883))
 
@@ -746,7 +904,7 @@ function H.luv2xyz(luv)
   return { x = x, y = y, z = z }
 end
 
------- CIELuv <-> CIELCh(uv)
+-- CIELuv <-> CIELCh(uv)
 H.tau = 2 * math.pi
 
 function H.luv2lch(luv)
@@ -768,7 +926,7 @@ function H.lch2luv(lch)
   return { l = lch.l, u = u, v = v }
 end
 
----- Distances
+-- Distances ------------------------------------------------------------------
 function H.dist_circle(x, y)
   local d = math.abs(x - y) % 360
   return d > 180 and (360 - d) or d
@@ -802,4 +960,4 @@ function H.nearest_rgb_id(rgb_target, rgb_palette)
   return best_id
 end
 
-return Base16
+return MiniBase16

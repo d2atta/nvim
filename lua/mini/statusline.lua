@@ -312,7 +312,8 @@ function MiniStatusline.section_git(args)
     end
     return string.format('%s %s', icon, head)
   end
-  return string.format('%s %s %s', icon, head, signs)
+     return string.format('%s %s', icon, head)
+  -- return string.format('%s %s %s', icon, head, signs)
 end
 
 --- Section for Neovim's builtin diagnostics
@@ -369,7 +370,7 @@ function MiniStatusline.section_filename(args)
     return '%f%m%r'
   else
     -- Use fullpath if not truncated
-    return '%F%m%r'
+    return vim.fn.pathshorten(vim.fn.expand("%:p"))
   end
 end
 
@@ -421,19 +422,7 @@ end
 ---@return string: Section string.
 function MiniStatusline.section_location(args)
   -- Use virtual column number to allow update when paste last column
-  if MiniStatusline.is_truncated(args.trunc_width) then
-    return '%l│%2v'
-  end
-
-  local size = vim.fn.getfsize(vim.fn.getreg('%'))
-  if size < 1024 then
-    size = string.format('%dB', size)
-  elseif size < 1048576 then
-    size = string.format('%.2fKiB', size / 1024)
-  else
-    size = string.format('%.2fMiB', size / 1048576)
-  end
-    return string.format('%s %s/%s', size, "%l", "%2v")
+    return '[%2l:%2v]'
 end
 
 --- Section for current search count
@@ -516,7 +505,7 @@ function H.apply_config(config)
 
   -- Set settings to ensure statusline is displayed properly
   if config.set_vim_settings then
-    vim.o.laststatus = 2 -- Always show statusline
+    vim.o.laststatus = 3 -- Always show statusline at last window
   end
 end
 
@@ -527,12 +516,12 @@ end
 ---- Default content
 function H.default_content_active()
   -- stylua: ignore start
-  local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
-  local git           = MiniStatusline.section_git({ trunc_width = 75 })
-  local diagnostics   = MiniStatusline.section_diagnostics({ trunc_width = 75 })
-  local filename      = MiniStatusline.section_filename({ trunc_width = 140 })
-  local fileinfo      = MiniStatusline.section_fileinfo({ trunc_width = 120 })
-  local location      = MiniStatusline.section_location({ trunc_width = 75 })
+  local mode, mode_hl = MiniStatusline.section_mode({})
+  local git           = MiniStatusline.section_git({})
+  local diagnostics   = MiniStatusline.section_diagnostics({})
+  local filename      = MiniStatusline.section_filename({})
+  local fileinfo      = MiniStatusline.section_fileinfo({})
+  local location      = MiniStatusline.section_location({})
 
   -- Usage of `MiniStatusline.combine_groups()` ensures highlighting and
   -- correct padding with spaces between groups (accounts for 'missing'
@@ -540,12 +529,11 @@ function H.default_content_active()
   return MiniStatusline.combine_groups({
 
     { hl = mode_hl,                  strings = { mode } },
-    -- '%<', -- Mark general truncate point
-    { hl = 'MiniStatuslineFilename', strings = { filename } },
+    { hl = 'MiniStatuslineInactive',  strings = { git } },
+    '%=',
+    { hl = 'MiniStatuslineFileinfo', strings = { fileinfo, filename, "%m%r" } },
     '%=', -- End left alignment
-    { hl = 'MiniStatuslineFileInfo',  strings = { git, diagnostics } },
-    { hl = 'MiniStatuslineFilename', strings = { location } },
-    { hl = mode_hl, strings = { fileinfo } },
+    { hl = 'MiniStatuslineDevinfo', strings = { diagnostics, location, "%y" } },
   })
   -- stylua: ignore end
 end
