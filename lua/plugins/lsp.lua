@@ -48,6 +48,36 @@ M.nullLs = function()
 	})
 end
 
+function M.lsp_icons()
+	return {
+		"", -- Text
+		"", -- Method
+		"", -- Function
+		"", -- Constructor
+		"", -- Field
+		"", -- Variable
+		"", -- Class
+		"ﰮ", -- Interface
+		"", -- Module
+		"", -- Property
+		"", -- Unit
+		"", -- Value
+		"", -- Enum
+		"", -- Keyword
+		"﬌", -- Snippet
+		"", -- Color
+		"", -- File
+		"", -- Reference
+		"", -- Folder
+		"", -- EnumMember
+		"", -- Constant
+		"", -- Struct
+		"", -- Event
+		"ﬦ", -- Operator
+		"", -- TypeParameter
+	}
+end
+
 M.lspconfig = function()
 	local servers = { "pyright", "sumneko_lua", "rust_analyzer", "html", "clangd" }
 	local nmap = require("utils").nmap
@@ -68,7 +98,7 @@ M.lspconfig = function()
 		nmap({ "<space>rn", vim.lsp.buf.rename, { buffer = bufnr } })
 		nmap({ "<space>ca", vim.lsp.buf.code_action, { buffer = bufnr } })
 
-		vim.lsp.protocol.CompletionItemKind = require("mini.icons").lsp_icons()
+		vim.lsp.protocol.CompletionItemKind = M.lsp_icons()
 		vim.opt.signcolumn = "auto:2"
 	end
 

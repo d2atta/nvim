@@ -1,11 +1,17 @@
 local opt = vim.opt
-local cmd = vim.cmd
+-- local cmd = vim.cmd
 local g = vim.g
 
-cmd([[
-au! BufWritePost $MYVIMRC source %
-au! filetype cpp,python,rust set rnu nu
-]])
+local grp = vim.api.nvim_create_augroup("source_nvimrc", {})
+vim.api.nvim_create_autocmd("BufWritePost", { pattern = { vim.env.MYVIMRC }, command = "luafile %", group = grp })
+
+-- local alpha_grp = vim.api.nvim_create_augroup("Alpha_Greeter", {})
+-- vim.api.nvim_create_autocmd("FileType", { pattern = "alpha", command = "set laststatus=0 noruler", group = alpha_grp })
+-- vim.api.nvim_create_autocmd(
+-- 	{ "BufUnload", "FileType" },
+-- 	{ pattern = "alpha", command = "set laststatus=3", group = alpha_grp }
+-- )
+
 -- disable some builtin vim plugins
 local disabled_built_ins = {
 	"did_load_filetypes",
@@ -51,6 +57,7 @@ opt.listchars = {
 }
 opt.undofile = true
 opt.laststatus = 3
+opt.ruler = false
 opt.pumheight = 10 -- Makes Popup smaller
 opt.termguicolors = true -- 256 colors
 -- opt.expandtab = true          -- Change tabs to spaces

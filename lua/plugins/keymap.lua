@@ -1,5 +1,5 @@
 local nmap = require("utils").nmap
-local imap = require("utils").imap
+-- local imap = require("utils").imap
 
 nmap({ "<C-s>", ":w<CR>" })
 nmap({ "<leader>nh", "<cmd>noh<CR>" })
@@ -10,7 +10,12 @@ nmap({ "<leader>n", "<cmd>set rnu! nu!<CR>" })
 nmap({ "]q", ":cn<CR>" })
 nmap({ "[q", ":cp<CR>" })
 nmap({ "<C-a>", "<cmd>%y <CR>" })
-nmap({ "<C-n>", "<cmd>NvimTreeToggle<CR>" })
+nmap({
+	"<C-n>",
+	function()
+		require("lir.float").toggle()
+	end,
+})
 nmap({
 	"<leader>ff",
 	function()

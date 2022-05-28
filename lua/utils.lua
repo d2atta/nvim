@@ -196,10 +196,7 @@ M.execute = function()
 		cmds = {
 			markdown = "glow %",
 			python = "python3 %",
-			rust = "cargo run",
-			cpp = "g++ -std=c++17 -O2 -g -fsanitize=address -fsanitize=undefined -D_GLIBCXX_DEBUG -Wshadow -Wall % -o $fileBase && ./$fileBase",
-			go = "go run %",
-			sh = "sh %",
+			cpp = "./$fileBase",
 			lua = "luafile %",
 			vim = "source %",
 		},
@@ -225,8 +222,12 @@ M.execute = function()
 			"g"
 		)
 	)
+
+	vim.cmd("silent! make")
 	if cmd ~= nil then
-		vim.cmd(config.ui.pos .. " " .. config.ui.size .. "new | term " .. cmd)
+		if cmd ~= "" then
+			vim.cmd(config.ui.pos .. " " .. config.ui.size .. "new | term " .. cmd)
+		end
 		local buf = vim.api.nvim_get_current_buf()
 		vim.api.nvim_buf_set_keymap(buf, "n", "q", "<C-\\><C-n>:bdelete!<CR>", { silent = true })
 		vim.api.nvim_buf_set_option(buf, "filetype", "Execute")

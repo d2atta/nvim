@@ -8,11 +8,10 @@ local plugins = {
 	-- Packer can manage itself
 	{ "nvim-lua/plenary.nvim" }, -- Functions for Nvim
 	{ "nathom/filetype.nvim" }, -- filetype
-	{ "lewis6991/impatient.nvim" },
-	{ "wbthomason/packer.nvim", event = "VimEnter" },
+	{ "wbthomason/packer.nvim" }, -- Packer
 
+	-- code highlighting
 	{
-		-- code highlighting
 		"nvim-treesitter/nvim-treesitter",
 		opt = true,
 		event = "BufRead",
@@ -20,7 +19,10 @@ local plugins = {
 			require("plugins").treesitter()
 		end,
 	},
+	-- Icons
+	{ "kyazdani42/nvim-web-devicons" },
 
+	-- Find files
 	{
 		"nvim-telescope/telescope.nvim",
 		module = "telescope",
@@ -28,21 +30,20 @@ local plugins = {
 		config = function()
 			require("plugins").telescope()
 		end,
-	}, -- Find files
+	},
+	{
+		"tamago324/lir.nvim",
+		config = function()
+			require("plugins.init").lir()
+		end,
+	},
 
+	-- Git sign
 	{
 		"lewis6991/gitsigns.nvim",
 		after = "nvim-lspconfig",
 		config = function()
 			require("gitsigns").setup()
-		end,
-	},
-
-	{
-		"kyazdani42/nvim-tree.lua",
-		cmd = { "NvimTreeToggle", "NvimTreeFocus" },
-		config = function()
-			require("plugins").nvimtree()
 		end,
 	},
 
@@ -62,7 +63,6 @@ local plugins = {
 			end, 0)
 		end,
 	},
-
 	{
 		"jose-elias-alvarez/null-ls.nvim",
 		opt = true,
@@ -71,18 +71,9 @@ local plugins = {
 			require("plugins.lsp").nullLs()
 		end,
 	},
-
-	{
-		"L3MON4D3/LuaSnip",
-		after = "mini",
-		config = function()
-			require("plugins").Luasnip()
-		end,
-	},
-
 	{
 		"$HOME/.config/nvim/lua/mini",
-		event = "BufRead",
+		event = "UIEnter",
 		config = function()
 			require("plugins").mini()
 		end,
@@ -91,8 +82,6 @@ local plugins = {
 ---}}}
 
 --{{{ Packer
-require("impatient").enable_profile()
-vim.cmd([["packadd packer.nvim"]])
 local packer = require("packer")
 packer.init({
 	display = {
@@ -100,6 +89,10 @@ packer.init({
 	},
 	compile_on_sync = true,
 	auto_clean = true,
+	profile = {
+		enable = true,
+		threshold = 1,
+	},
 })
 packer.startup({ plugins })
 ---}}}

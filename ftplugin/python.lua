@@ -1,0 +1,50 @@
+vim.wo.relativenumber = true
+vim.wo.number = true
+
+vim.cmd("compiler pylint")
+local function snippet()
+	vim.api.nvim_put({
+		'""" ',
+		"Coder: devildev",
+		'"""',
+		"import bisect",
+		"import math",
+		"import sys",
+		"from time import time",
+		"from functools import wraps",
+		"from bisect import bisect_left as bl",
+		"from bisect import bisect_right as br",
+		"from collections import defaultdict as dd",
+		"from collections import Counter",
+		"from math import floor, gcd, log, sqrt, ceil",
+		"from sys import stdin, stdout",
+		"",
+		"# I/O func ",
+		"inp = lambda: int(input())",
+		"strng = lambda: input().strip()",
+		"jn = lambda x, l: x.join(map(str, l))",
+		"strl = lambda: list(input().strip())",
+		"mul = lambda: map(int, input().strip().split())",
+		"mulf = lambda: map(float, input().strip().split())",
+		"seq = lambda: list(map(int, input().strip().split()))",
+		"ceildiv = lambda x, d: x // d if (x % d == 0) else x // d + 1",
+		"",
+		"# Constants",
+		"MOD = 1000000007",
+		'INF = float("inf")',
+		'NINF = float("-inf")',
+		"sys.setrecursionlimit(100000000)",
+		"",
+		"# M A I N",
+		"def solve():",
+		"    pass",
+		"",
+		"",
+		'if __name__ == "__main__":',
+		"    T = inp()",
+		"    for t in range(T):",
+		'        # stdpr("Case #" + t + ": ")',
+		"        solve()",
+	}, "l", false, true)
+end
+vim.keymap.set({ "n", "i" }, "<C-k>", snippet, { buffer = 0 })

@@ -399,32 +399,7 @@ end
 ---@param args table: Section arguments.
 ---@return string: Section string.
 function MiniStatusline.section_fileinfo(args)
-	-- Don't show anything if can't detect file type or not inside a "normal
-	-- buffer"
-	if (filetype == "") or H.isnt_normal_buffer() then
-		return ""
-	else
-		local extension = vim.fn.expand("%:e")
-		return string.format("%s", require("mini.icons").get_icon(extension))
-	end
-
-	-- Add filetype icon
-	local icon = H.get_filetype_icon()
-	if icon ~= "" then
-		filetype = string.format("%s %s", icon, filetype)
-	end
-
-	-- Construct output string if truncated
-	if MiniStatusline.is_truncated(args.trunc_width) then
-		return filetype
-	end
-
-	-- Construct output string with extra file info
-	local encoding = vim.bo.fileencoding or vim.bo.encoding
-	local format = vim.bo.fileformat
-	local size = H.get_filesize()
-
-	return string.format("%s %s[%s] %s", filetype, encoding, format, size)
+	return H.get_filetype_icon()
 end
 
 --- Section for location inside buffer
@@ -439,7 +414,11 @@ end
 ---@return string: Section string.
 function MiniStatusline.section_location(args)
 	-- Use virtual column number to allow update when paste last column
-	return "[%2l:%2v]"
+	if MiniStatusline.is_truncated(args.trunc_width) then
+		return "[%2l:%2v]"
+	else
+		return "[%2l:%2v] %y"
+	end
 end
 
 --- Section for current search count
@@ -523,12 +502,12 @@ end
 ---- Default content
 function H.default_content_active()
   -- stylua: ignore start
-  local mode, mode_hl = MiniStatusline.section_mode({})
+  local mode, mode_hl = MiniStatusline.section_mode({trunc_width = 85})
   local git           = MiniStatusline.section_git({})
   local diagnostics   = MiniStatusline.section_diagnostics({})
   local filename      = MiniStatusline.section_filename({})
   local fileinfo      = MiniStatusline.section_fileinfo({})
-  local location      = MiniStatusline.section_location({})
+  local location      = MiniStatusline.section_location({trunc_width = 75})
 
   -- Usage of `MiniStatusline.combine_groups()` ensures highlighting and
   -- correct padding with spaces between groups (accounts for 'missing'
@@ -540,7 +519,7 @@ function H.default_content_active()
     '%=',
     { hl = 'MiniStatuslineFileinfo', strings = { fileinfo, filename, "%m%r" } },
     '%=', -- End left alignment
-    { hl = 'MiniStatuslineDevinfo', strings = { diagnostics, location, "%y" } },
+    { hl = 'MiniStatuslineDevinfo', strings = { diagnostics, location } },
   })
 	-- stylua: ignore end
 end
