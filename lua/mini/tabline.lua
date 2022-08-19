@@ -297,8 +297,7 @@ function H.finalize_labels()
 	for _, tab in pairs(H.tabs) do
 		if MiniTabline.config.show_icons and has_devicons then
 			local extension = vim.fn.fnamemodify(tab.label, ":e")
-			-- local icon = devicons.get_icon(tab.label, extension, { default = true })
-			local icon = devicons.get_icon(extension)
+			local icon = devicons.get_icon(tab.label, extension, { default = true })
 			tab.label = string.format(" %s %s ", icon, tab.label)
 		else
 			tab.label = string.format(" %s ", tab.label)

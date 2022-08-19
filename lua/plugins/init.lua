@@ -50,6 +50,20 @@ M.treesitter = function()
 	end
 
 	local default = {
+		highlight = {
+			enable = true,
+			disable = { "org" }, -- Remove this to use TS highlighter for some of the highlights (Experimental)
+			additional_vim_regex_highlighting = { "org" }, -- Required since TS highlighter doesn't support all syntax features (conceal)
+		},
+		incremental_selection = {
+			enable = true,
+			keymaps = {
+				init_selection = "gnn",
+				node_incremental = "grn",
+				scope_incremental = "grc",
+				node_decremental = "grm",
+			},
+		},
 		ensure_installed = {
 			"lua",
 			"python",
@@ -58,9 +72,43 @@ M.treesitter = function()
 			"rust",
 			"bash",
 			"vim",
+			"org",
 		},
 		indent = {
 			enable = true,
+		},
+		textobjects = {
+			select = {
+				enable = true,
+				lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+				keymaps = {
+					-- You can use the capture groups defined in textobjects.scm
+					["af"] = "@function.outer",
+					["if"] = "@function.inner",
+					["ac"] = "@class.outer",
+					["ic"] = "@class.inner",
+				},
+			},
+			move = {
+				enable = true,
+				set_jumps = true, -- whether to set jumps in the jumplist
+				goto_next_start = {
+					["]m"] = "@function.outer",
+					["]]"] = "@class.outer",
+				},
+				goto_next_end = {
+					["]M"] = "@function.outer",
+					["]["] = "@class.outer",
+				},
+				goto_previous_start = {
+					["[m"] = "@function.outer",
+					["[["] = "@class.outer",
+				},
+				goto_previous_end = {
+					["[M"] = "@function.outer",
+					["[]"] = "@class.outer",
+				},
+			},
 		},
 	}
 	ts_config.setup(default)
@@ -92,11 +140,14 @@ M.lir = function()
 			["."] = actions.toggle_show_hidden,
 			["d"] = actions.delete,
 		},
-		float = { winblend = 20 },
+		float = {
+			winblend = 15,
+		},
 		hide_cursor = true,
 		on_init = function()
 			-- echo cwd
 			vim.api.nvim_echo({ { vim.fn.expand("%:p"), "Normal" } }, false, {})
+			vim.b.ministatusline_disable = true
 		end,
 	}
 	lir_conf.setup(options)
@@ -200,11 +251,13 @@ end
 
 M.mini = function()
 	require("utils").set_theme()
-	require("mini.tabline").setup()
 	require("mini.statusline").setup()
-	require("mini.comment").setup()
-	require("mini.completion").setup({ delay = { completion = 100, info = 10, signature = 50 } })
-	require("mini.pairs").setup()
+	require("mini.tabline").setup()
+	require("mini.completion").setup()
+	vim.defer_fn(function()
+		require("mini.comment").setup()
+		require("mini.pairs").setup()
+	end, 0)
 end
 
 return M

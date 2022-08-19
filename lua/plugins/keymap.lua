@@ -3,7 +3,8 @@ local nmap = require("utils").nmap
 
 nmap({ "<C-s>", ":w<CR>" })
 nmap({ "<leader>nh", "<cmd>noh<CR>" })
-nmap({ "<leader>bn", "<cmd>bn<CR>" })
+nmap({ "]b", "<cmd>bn<CR>" })
+nmap({ "[b", "<cmd>bN<CR>" })
 nmap({ "<C-w>", "<cmd>bw<CR>" })
 nmap({ "<leader>tt", "<cmd>vnew<CR>" })
 nmap({ "<leader>n", "<cmd>set rnu! nu!<CR>" })
@@ -17,10 +18,15 @@ nmap({
 	end,
 })
 nmap({
-	"<leader>ff",
+	"<leader>sf",
 	function()
-		-- Choose theme
 		require("telescope.builtin").find_files(require("telescope.themes").get_dropdown())
+	end,
+})
+nmap({
+	"<leader><space>",
+	function()
+		require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
 	end,
 })
 nmap({
@@ -29,12 +35,12 @@ nmap({
 		require("telescope.builtin").find_files(require("telescope.themes").get_ivy({ cwd = "~/.config/nvim" }))
 	end,
 })
-nmap({
-	"<leader>tc",
-	function()
-		require("utils").change_theme({})
-	end,
-})
+nmap({ "<leader>sb", ":Telescope current_buffer_fuzzy_find <CR>" })
+nmap({ "<leader>sh", ":Telescope help_tags <CR>" })
+nmap({ "<leader>sd", ":Telescope grep_string <CR>" })
+nmap({ "<leader>sp", ":Telescope live_grep <CR>" })
+nmap({ "<leader>?", ":Telescope oldfiles <CR>" })
+nmap({ "<leader>tc", require("utils").change_theme })
 nmap({ "<leader>r", require("utils").execute })
 
 -- split window easily
@@ -56,7 +62,3 @@ nmap({ "<C-Down>", ":resize -3<CR>" })
 -- Change 2 split windows from vert to horiz or horiz to vert
 nmap({ "<leader>th", "<C-w>t<C-w>H" })
 nmap({ "<leader>tk", "<C-w>t<C-w>K" })
-
--- Tab naviagtion
-nmap({ "<Tab>", "<cmd>bn<CR>" })
-nmap({ "<S-Tab>", "<cmd>bp<CR>" })

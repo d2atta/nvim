@@ -515,7 +515,7 @@ function H.default_content_active()
   return MiniStatusline.combine_groups({
 
     { hl = mode_hl,                  strings = { mode } },
-    { hl = 'MiniStatuslineInactive',  strings = { git } },
+    { hl = 'MiniStatuslineDevinfo',  strings = { git } },
     '%=',
     { hl = 'MiniStatuslineFileinfo', strings = { fileinfo, filename, "%m%r" } },
     '%=', -- End left alignment

@@ -2,19 +2,8 @@ local opt = vim.opt
 -- local cmd = vim.cmd
 local g = vim.g
 
-local grp = vim.api.nvim_create_augroup("source_nvimrc", {})
-vim.api.nvim_create_autocmd("BufWritePost", { pattern = { vim.env.MYVIMRC }, command = "luafile %", group = grp })
-
--- local alpha_grp = vim.api.nvim_create_augroup("Alpha_Greeter", {})
--- vim.api.nvim_create_autocmd("FileType", { pattern = "alpha", command = "set laststatus=0 noruler", group = alpha_grp })
--- vim.api.nvim_create_autocmd(
--- 	{ "BufUnload", "FileType" },
--- 	{ pattern = "alpha", command = "set laststatus=3", group = alpha_grp }
--- )
-
 -- disable some builtin vim plugins
 local disabled_built_ins = {
-	"did_load_filetypes",
 	"2html_plugin",
 	"getscript",
 	"getscriptPlugin",
@@ -34,7 +23,9 @@ local disabled_built_ins = {
 	"zip",
 	"zipPlugin",
 }
-g.did_load_filetypes = 1
+-- Replace filetype.vim with filetype.nvim
+g.did_load_filetypes = 0
+g.do_filetype_lua = 1
 for _, plugin in pairs(disabled_built_ins) do
 	g["loaded_" .. plugin] = 1
 end
@@ -68,6 +59,8 @@ opt.encoding = "utf-8" -- Character encoding
 opt.mouse = "nicr" -- Mouse scrolling support
 opt.clipboard = "unnamedplus" -- Copy/paste anywhere
 opt.showmode = false
+opt.conceallevel = 2
+opt.concealcursor = "nc"
 opt.foldmethod = "expr" -- Fold Method
 opt.foldexpr = "nvim_treesitter#foldexpr()"
 opt.foldtext = [[ substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]

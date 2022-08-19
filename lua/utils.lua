@@ -90,6 +90,7 @@ M.change_theme = function(opts)
 		"paradise",
 		"penokai",
 		"pywal",
+		"rxyhn",
 		"solarized",
 		"tokyodark",
 		"tokyonight",
@@ -187,7 +188,7 @@ M.set_theme = function(theme)
 	local pallate = require(file)
 	require("mini.base16").setup({
 		palette = pallate,
-		use_cterm = true,
+		use_cterm = false,
 	})
 end
 
