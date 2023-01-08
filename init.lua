@@ -8,7 +8,7 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
 	vim.fn.execute("!git clone https://github.com/wbthomason/packer.nvim " .. install_path)
 end
 -- Theme
-vim.g.theme = "chadracula"
+vim.g.theme = "palenight"
 --{{{ Package manager
 local plugins = {
 	-- Packer can manage itself
@@ -18,7 +18,6 @@ local plugins = {
 	-- code highlighting
 	{
 		"nvim-treesitter/nvim-treesitter",
-		event = "BufRead",
 		config = function()
 			require("plugins").treesitter()
 		end,
@@ -51,7 +50,7 @@ local plugins = {
 		"tamago324/lir.nvim",
 		event = "UIEnter",
 		config = function()
-			require("plugins.init").lir()
+			require("plugins").lir()
 		end,
 	},
 
@@ -73,7 +72,7 @@ local plugins = {
 		ft = { "python", "lua", "rust" },
 		setup = function()
 			vim.defer_fn(function()
-				vim.cmd([[ if &ft == "packer" | echo "" | else | silent! e % ]])
+				require("packer").loader("nvim-lspconfig")
 			end, 0)
 		end,
 		config = function()
@@ -87,29 +86,17 @@ local plugins = {
 			require("plugins.lsp").nullLs()
 		end,
 	},
-
-	-- Org
 	{
-		"nvim-orgmode/orgmode",
-		after = "nvim-treesitter",
+		"hrsh7th/nvim-cmp",
+		event = "InsertEnter",
 		config = function()
-			require("orgmode").setup_ts_grammar()
-			require("orgmode").setup({
-				org_agenda_files = { "~/dox/gol/*", "~/dox/gol/**/*" },
-				org_default_notes_file = "~/dox/gol/refile-pc.org",
-			})
+			require "plugins.cmp"
 		end,
 	},
-	{
-		"akinsho/org-bullets.nvim",
-		after = "orgmode",
-		config = function()
-			require("org-bullets").setup({
-				-- ● ◇ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶
-				symbols = { "◉", "○", "●", "◆" },
-			})
-		end,
-	},
+  	{"hrsh7th/cmp-nvim-lua", after = "nvim-cmp" },
+  	{"hrsh7th/cmp-nvim-lsp", after = "cmp-nvim-lua" },
+  	{"hrsh7th/cmp-buffer", after = "cmp-nvim-lsp" },
+  	{"hrsh7th/cmp-path", after = "cmp-buffer" },
 
 	-- Misc
 	{

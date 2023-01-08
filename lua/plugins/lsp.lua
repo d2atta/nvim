@@ -10,22 +10,22 @@ M.nullLs = function()
 		formatting.black.with({ extra_args = { "--fast" } }),
 		formatting.stylua,
 		formatting.rustfmt,
-		formatting.clang_format,
+		-- formatting.clang_format,
 		-- completion.luasnip,
 		-- formatting.prettier.with({ extra_args = { "--no-semi", "--single" } }),
 		-- formatting.codespell,
 	}
-	local lsp_formatting = function(bufnr)
-		vim.lsp.buf.format({
-			filter = function(clients)
-				-- filter out clients that you don't want to use
-				return vim.tbl_filter(function(client)
-					return client.name ~= "rust_analyzer"
-				end, clients)
-			end,
-			bufnr = bufnr,
-		})
-	end
+	-- local lsp_formatting = function(bufnr)
+	-- 	vim.lsp.buf.format({
+	-- 		filter = function(clients)
+	-- 			-- filter out clients that you don't want to use
+	-- 			return vim.tbl_filter(function(client)
+	-- 				return client.name ~= "rust_analyzer"
+	-- 			end, clients)
+	-- 		end,
+	-- 		bufnr = bufnr,
+	-- 	})
+	-- end
 
 	-- if you want to set up formatting on save, you can use this as a callback
 	local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
@@ -40,7 +40,7 @@ M.nullLs = function()
 					group = augroup,
 					buffer = bufnr,
 					callback = function()
-						lsp_formatting(bufnr)
+					-- 	lsp_formatting(bufnr)
 					end,
 				})
 			end
@@ -50,32 +50,45 @@ end
 
 function M.lsp_icons()
 	return {
-		"", -- Text
-		"", -- Method
-		"", -- Function
-		"", -- Constructor
-		"", -- Field
-		"", -- Variable
-		"", -- Class
-		"ﰮ", -- Interface
-		"", -- Module
-		"", -- Property
-		"", -- Unit
-		"", -- Value
-		"", -- Enum
-		"", -- Keyword
-		"﬌", -- Snippet
-		"", -- Color
-		"", -- File
-		"", -- Reference
-		"", -- Folder
-		"", -- EnumMember
-		"", -- Constant
-		"", -- Struct
-		"", -- Event
-		"ﬦ", -- Operator
-		"", -- TypeParameter
-	}
+	  Namespace = "",
+	  Text = " ",
+	  Method = " ",
+	  Function = " ",
+	  Constructor = " ",
+	  Field = "ﰠ ",
+	  Variable = " ",
+	  Class = "ﴯ ",
+	  Interface = " ",
+	  Module = " ",
+	  Property = "ﰠ ",
+	  Unit = "塞 ",
+	  Value = " ",
+	  Enum = " ",
+	  Keyword = " ",
+	  Snippet = " ",
+	  Color = " ",
+	  File = " ",
+	  Reference = " ",
+	  Folder = " ",
+	  EnumMember = " ",
+	  Constant = " ",
+	  Struct = "פּ ",
+	  Event = " ",
+	  Operator = " ",
+	  TypeParameter = " ",
+	  Table = "",
+	  Object = " ",
+	  Tag = "",
+	  Array = "[]",
+	  Boolean = " ",
+	  Number = " ",
+	  Null = "ﳠ",
+	  String = " ",
+	  Calendar = "",
+	  Watch = " ",
+	  Package = "",
+	  Copilot = " ",
+}
 end
 
 M.lspconfig = function()

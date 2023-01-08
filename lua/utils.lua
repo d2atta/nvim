@@ -89,7 +89,6 @@ M.change_theme = function(opts)
 		"palenight",
 		"paradise",
 		"penokai",
-		"pywal",
 		"rxyhn",
 		"solarized",
 		"tokyodark",

@@ -52,8 +52,6 @@ M.treesitter = function()
 	local default = {
 		highlight = {
 			enable = true,
-			disable = { "org" }, -- Remove this to use TS highlighter for some of the highlights (Experimental)
-			additional_vim_regex_highlighting = { "org" }, -- Required since TS highlighter doesn't support all syntax features (conceal)
 		},
 		incremental_selection = {
 			enable = true,
@@ -76,6 +74,7 @@ M.treesitter = function()
 		},
 		indent = {
 			enable = true,
+			disable = {'python', }
 		},
 		textobjects = {
 			select = {
@@ -253,7 +252,7 @@ M.mini = function()
 	require("utils").set_theme()
 	require("mini.statusline").setup()
 	require("mini.tabline").setup()
-	require("mini.completion").setup()
+	require("packer").loader("mini")
 	vim.defer_fn(function()
 		require("mini.comment").setup()
 		require("mini.pairs").setup()

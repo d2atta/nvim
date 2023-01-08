@@ -23,8 +23,6 @@ local disabled_built_ins = {
 	"zip",
 	"zipPlugin",
 }
--- Replace filetype.vim with filetype.nvim
-g.did_load_filetypes = 0
 g.do_filetype_lua = 1
 for _, plugin in pairs(disabled_built_ins) do
 	g["loaded_" .. plugin] = 1
@@ -47,7 +45,7 @@ opt.listchars = {
 	nbsp = "␣",
 }
 opt.undofile = true
-opt.laststatus = 3
+opt.laststatus=3
 opt.ruler = false
 opt.pumheight = 10 -- Makes Popup smaller
 opt.termguicolors = true -- 256 colors
