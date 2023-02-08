@@ -42,6 +42,7 @@ nmap({ "<leader>sp", ":Telescope live_grep <CR>" })
 nmap({ "<leader>?", ":Telescope oldfiles <CR>" })
 nmap({ "<leader>tc", require("utils").change_theme })
 nmap({ "<leader>r", require("utils").execute })
+nmap({"<leader>z", ":Twilight <CR>"})
 
 -- split window easily
 nmap({ "<leader>wv", ":vsplit<CR>" })

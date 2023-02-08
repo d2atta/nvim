@@ -526,6 +526,17 @@ function H.apply_palette(palette, use_cterm)
 
   hi('MiniIndentscopeSymbol', {fg=p.base0F, bg=nil,})
   hi('MiniIndentscopePrefix', {fg=nil,      bg=nil, nocombine = true})
+  hi('IndentBlanklineChar',         {fg=p.base02, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineContextChar',  {fg=p.base0F, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineContextStart', {fg=nil,      bg=nil, underline = true, nocombine = true, sp=p.base0F})
+  hi('IndentBlanklineIndent1',      {fg=p.base08, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent2',      {fg=p.base09, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent3',      {fg=p.base0A, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent4',      {fg=p.base0B, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent5',      {fg=p.base0C, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent6',      {fg=p.base0D, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent7',      {fg=p.base0E, bg=nil, nocombine = true, sp=nil})
+  hi('IndentBlanklineIndent8',      {fg=p.base0F, bg=nil, nocombine = true, sp=nil})
 
   hi('MiniJump',              {undercurl = true})
 

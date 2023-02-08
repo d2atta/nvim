@@ -113,6 +113,34 @@ M.treesitter = function()
 	ts_config.setup(default)
 end
 
+M.twilight = function()
+	local present, tw_config = pcall(require, "twilight")
+	if not present then
+		return
+	end
+
+	tw_config.setup {
+		dimming = {
+		    alpha = 0.25, -- amount of dimming
+		    -- we try to get the foreground from the highlight groups or fallback color
+		    color = { "Normal", "#ffffff" },
+		    term_bg = "#000000", -- if guibg=NONE, this will be used to calculate text color
+		    inactive = false, -- when true, other windows will be fully dimmed (unless they contain the same buffer)
+		  },
+		  context = 10, -- amount of lines we will try to show around the current line
+		  treesitter = true, -- use treesitter when available for the filetype
+		  -- treesitter is used to automatically expand the visible text,
+		  -- but you can further control the types of nodes that should always be fully expanded
+		  expand = { -- for treesitter, we we always try to expand to the top-most ancestor with these types
+		    "function",
+		    "method",
+		    "table",
+		    "if_statement",
+		  },
+		  exclude = {}, -- exclude these filetypes
+	}
+end
+
 M.lir = function()
 	local present, lir_conf = pcall(require, "lir")
 	if not present then
@@ -121,7 +149,10 @@ M.lir = function()
 	local actions = require("lir.actions")
 	local options = {
 		show_hidden_files = false,
-		devicons_enable = true,
+		devicons = {
+			enable = true,
+			highlight_dir_name = true,
+		},
 		mappings = {
 			["l"] = actions.edit,
 			["<C-s>"] = actions.split,
@@ -246,6 +277,20 @@ M.starter = function()
 	}
 
 	alpha.setup(config)
+end
+
+M.blankline = function()
+	local present, indent_blank = pcall(require, "indent_blankline")
+	if not present then
+		return
+	end
+	local options = {
+	    space_char_blankline = " ",
+	    show_end_of_line = true,
+	    show_current_context = true,
+	    show_current_context_start = true,
+	}
+	indent_blank.setup(options)
 end
 
 M.mini = function()

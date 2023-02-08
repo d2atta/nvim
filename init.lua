@@ -14,6 +14,13 @@ local plugins = {
 	-- Packer can manage itself
 	{ "nvim-lua/plenary.nvim" }, -- Functions for Nvim
 	{ "wbthomason/packer.nvim" }, -- Packer
+	-- Twilight
+	{
+		"folke/twilight.nvim",
+		config = function()
+			require("plugins").twilight()
+		end
+	},
 
 	-- code highlighting
 	{
@@ -93,12 +100,19 @@ local plugins = {
 			require "plugins.cmp"
 		end,
 	},
-  	{"hrsh7th/cmp-nvim-lua", after = "nvim-cmp" },
-  	{"hrsh7th/cmp-nvim-lsp", after = "cmp-nvim-lua" },
-  	{"hrsh7th/cmp-buffer", after = "cmp-nvim-lsp" },
-  	{"hrsh7th/cmp-path", after = "cmp-buffer" },
+	{"hrsh7th/cmp-nvim-lua", after = "nvim-cmp" },
+	{"hrsh7th/cmp-nvim-lsp", after = "cmp-nvim-lua" },
+	{"hrsh7th/cmp-buffer", after = "cmp-nvim-lsp" },
+	{"hrsh7th/cmp-path", after = "cmp-buffer" },
 
 	-- Misc
+	{
+		"lukas-reineke/indent-blankline.nvim",
+		event = "VimEnter",
+		config = function()
+			require("plugins").blankline()
+		end
+	},
 	{
 		"$HOME/.config/nvim/lua/mini",
 		event = "VimEnter",
