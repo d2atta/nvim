@@ -1,53 +1,42 @@
 ---------------------------------------------------------------------------
 --                             N V I M
 ---------------------------------------------------------------------------
--- Install packer
-local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-	vim.fn.execute("!git clone https://github.com/wbthomason/packer.nvim " .. install_path)
+-- Install lazy.vim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
 end
+vim.opt.rtp:prepend(lazypath)
+
 -- Theme
 vim.g.theme = "palenight"
+
 --{{{ Package manager
 local plugins = {
-	-- Packer can manage itself
-	{ "nvim-lua/plenary.nvim" }, -- Functions for Nvim
-	{ "wbthomason/packer.nvim" }, -- Packer
-	-- Twilight
-	{
-		"folke/twilight.nvim",
-		config = function()
-			require("plugins").twilight()
-		end
-	},
-
+	{ "nvim-lua/plenary.nvim", lazy = true },
 	-- code highlighting
 	{
 		"nvim-treesitter/nvim-treesitter",
+		build = ":TSUpdate",
+		event = { "BufReadPost", "BufNewFile" },
 		config = function()
 			require("plugins").treesitter()
 		end,
 	},
 	-- Icons
-	{
-		"kyazdani42/nvim-web-devicons",
-		config = function()
-			require("nvim-web-devicons").setup({
-				override = {
-					org = {
-						icon = "",
-						color = "#428850",
-					},
-				},
-			})
-		end,
-	},
+	{ "kyazdani42/nvim-web-devicons", lazy = true },
 
 	-- Find files
 	{
 		"nvim-telescope/telescope.nvim",
-		module = "telescope",
+		name = "telescope",
 		cmd = "Telescope",
 		config = function()
 			require("plugins").telescope()
@@ -55,18 +44,9 @@ local plugins = {
 	},
 	{
 		"tamago324/lir.nvim",
-		event = "UIEnter",
+		lazy = true,
 		config = function()
 			require("plugins").lir()
-		end,
-	},
-
-	-- Git sign
-	{
-		"lewis6991/gitsigns.nvim",
-		after = "nvim-lspconfig",
-		config = function()
-			require("gitsigns").setup()
 		end,
 	},
 
@@ -74,53 +54,74 @@ local plugins = {
 	{
 		"neovim/nvim-lspconfig",
 		module = "lspconfig",
-		after = "mini",
-		event = "UIEnter",
 		ft = { "python", "lua", "rust" },
-		setup = function()
-			vim.defer_fn(function()
-				require("packer").loader("nvim-lspconfig")
-			end, 0)
-		end,
 		config = function()
 			require("plugins.lsp").lspconfig()
 		end,
+		dependencies = {
+			"hrsh7th/cmp-nvim-lua",
+			"hrsh7th/cmp-nvim-lsp",
+			"hrsh7th/cmp-buffer",
+			"hrsh7th/cmp-path",
+			"lewis6991/gitsigns.nvim",
+			{
+				"hrsh7th/nvim-cmp",
+				config = function()
+					require("plugins.cmp")
+				end,
+			},
+			{
+				"jose-elias-alvarez/null-ls.nvim",
+				config = function()
+					require("plugins.lsp").nullLs()
+				end,
+			},
+		},
 	},
+	-- copilot
 	{
-		"jose-elias-alvarez/null-ls.nvim",
-		after = "nvim-lspconfig",
+		"zbirenbaum/copilot-cmp",
+		lazy = true,
+		config = function(_, opts)
+			local copilot_cmp = require("copilot_cmp")
+			copilot_cmp.setup(opts)
+			require("utils").on_attach(function(client)
+				if client.name == "copilot" then
+					copilot_cmp._on_insert_enter()
+				end
+			end)
+		end,
+		dependencies = {
+			"zbirenbaum/copilot.lua",
+			cmd = "Copilot",
+			build = ":Copilot auth",
+			opts = {
+				suggestion = { enabled = false },
+				panel = { enabled = false },
+			},
+		},
+	},
+	-- colorscheme
+	{
+		"echasnovski/mini.base16",
+		event = { "VimEnter" },
+		priority = 100,
 		config = function()
-			require("plugins.lsp").nullLs()
+			require("utils").set_theme()
 		end,
 	},
-	{
-		"hrsh7th/nvim-cmp",
-		event = "InsertEnter",
-		config = function()
-			require "plugins.cmp"
-		end,
-	},
-	{"hrsh7th/cmp-nvim-lua", after = "nvim-cmp" },
-	{"hrsh7th/cmp-nvim-lsp", after = "cmp-nvim-lua" },
-	{"hrsh7th/cmp-buffer", after = "cmp-nvim-lsp" },
-	{"hrsh7th/cmp-path", after = "cmp-buffer" },
-
 	-- Misc
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		event = "VimEnter",
+		event = { "BufReadPost", "BufNewFile" },
+		lazy = true,
 		config = function()
 			require("plugins").blankline()
-		end
+		end,
 	},
 	{
-		"$HOME/.config/nvim/lua/mini",
-		event = "VimEnter",
-		setup = function()
-			vim.defer_fn(function()
-				vim.cmd([[if &ft == "packer" | echo "" | else | silent! e %]])
-			end, 0)
-		end,
+		dir = "~/.config/nvim/lua/mini",
+		event = { "BufReadPost", "BufNewFile" },
 		config = function()
 			require("plugins").mini()
 		end,
@@ -128,35 +129,40 @@ local plugins = {
 }
 ---}}}
 
---{{{ Packer
-local packer = require("packer")
-packer.init({
-	display = {
-		open_fn = require("packer.util").float,
+--{{{ Lazy
+local lazy = require("lazy")
+local opts = {
+	rtp = {
+		disabled_plugins = {
+			"2html_plugin",
+			"getscript",
+			"getscriptPlugin",
+			"gzip",
+			"logipat",
+			"netrw",
+			"netrwPlugin",
+			"netrwSettings",
+			"netrwFileHandlers",
+			"matchit",
+			"tar",
+			"tarPlugin",
+			"rrhelper",
+			"spellfile_plugin",
+			"vimball",
+			"vimballPlugin",
+			"zip",
+			"zipPlugin",
+		},
 	},
-	compile_on_sync = true,
-	auto_clean = true,
-	profile = {
-		enable = true,
-		threshold = 1,
-	},
-})
-packer.startup({ plugins })
+}
+lazy.setup(plugins, opts)
 ---}}}
 
 --{{{Global
-require("plugins.options")
-require("plugins.keymap")
+require("options")
+require("keymap")
 --}}}
 --{{{Autocommands
--- Source after save
-local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
-vim.api.nvim_create_autocmd("BufWritePost", {
-	command = "source <afile> | PackerCompile",
-	group = packer_group,
-	pattern = "init.lua",
-})
-
 -- Highlight on yank
 local highlight_group = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
 vim.api.nvim_create_autocmd("TextYankPost", {

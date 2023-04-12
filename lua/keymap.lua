@@ -1,6 +1,9 @@
 local nmap = require("utils").nmap
+local tmap = require("utils").tmap
+local vmap = require("utils").tmap
 -- local imap = require("utils").imap
 
+tmap({ "<Esc>", "<C-\\><C-n>" })
 nmap({ "<C-s>", ":w<CR>" })
 nmap({ "<leader>nh", "<cmd>noh<CR>" })
 nmap({ "]b", "<cmd>bn<CR>" })
@@ -11,38 +14,39 @@ nmap({ "<leader>n", "<cmd>set rnu! nu!<CR>" })
 nmap({ "]q", ":cn<CR>" })
 nmap({ "[q", ":cp<CR>" })
 nmap({ "<C-a>", "<cmd>%y <CR>" })
+-- open file_browser with the path of the current buffer
 nmap({
-	"<C-n>",
-	function()
-		require("lir.float").toggle()
-	end,
+        "<C-n>",
+        function()
+                require("lir.float").toggle()
+        end,
 })
 nmap({
-	"<leader>sf",
-	function()
-		require("telescope.builtin").find_files(require("telescope.themes").get_dropdown())
-	end,
+        "<leader>sb",
+        function()
+                require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
+        end,
 })
 nmap({
-	"<leader><space>",
-	function()
-		require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
-	end,
+        "<leader><space>",
+        function()
+                require("telescope.builtin").find_files(require("telescope.themes").get_dropdown())
+        end,
 })
 nmap({
-	"<leader>fp",
-	function()
-		require("telescope.builtin").find_files(require("telescope.themes").get_ivy({ cwd = "~/.config/nvim" }))
-	end,
+        "<leader>fp",
+        function()
+                require("telescope.builtin").find_files(require("telescope.themes").get_ivy({ cwd = "~/.config/nvim" }))
+        end,
 })
-nmap({ "<leader>sb", ":Telescope current_buffer_fuzzy_find <CR>" })
+nmap({ "<leader>sf", ":Telescope current_buffer_fuzzy_find <CR>" })
 nmap({ "<leader>sh", ":Telescope help_tags <CR>" })
 nmap({ "<leader>sd", ":Telescope grep_string <CR>" })
 nmap({ "<leader>sp", ":Telescope live_grep <CR>" })
 nmap({ "<leader>?", ":Telescope oldfiles <CR>" })
 nmap({ "<leader>tc", require("utils").change_theme })
 nmap({ "<leader>r", require("utils").execute })
-nmap({"<leader>z", ":Twilight <CR>"})
+nmap({ "<leader>z", ":Twilight <CR>" })
 
 -- split window easily
 nmap({ "<leader>wv", ":vsplit<CR>" })
@@ -63,3 +67,7 @@ nmap({ "<C-Down>", ":resize -3<CR>" })
 -- Change 2 split windows from vert to horiz or horiz to vert
 nmap({ "<leader>th", "<C-w>t<C-w>H" })
 nmap({ "<leader>tk", "<C-w>t<C-w>K" })
+
+-- Visual moving
+vmap({ "J", ":m '>+1<CR>gv=gv'" })
+vmap({ "K", ":m '<-2<CR>gv=gv'" })

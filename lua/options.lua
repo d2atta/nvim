@@ -2,32 +2,6 @@ local opt = vim.opt
 -- local cmd = vim.cmd
 local g = vim.g
 
--- disable some builtin vim plugins
-local disabled_built_ins = {
-	"2html_plugin",
-	"getscript",
-	"getscriptPlugin",
-	"gzip",
-	"logipat",
-	"netrw",
-	"netrwPlugin",
-	"netrwSettings",
-	"netrwFileHandlers",
-	"matchit",
-	"tar",
-	"tarPlugin",
-	"rrhelper",
-	"spellfile_plugin",
-	"vimball",
-	"vimballPlugin",
-	"zip",
-	"zipPlugin",
-}
-g.do_filetype_lua = 1
-for _, plugin in pairs(disabled_built_ins) do
-	g["loaded_" .. plugin] = 1
-end
-
 opt.path = table.concat({ "**" }) -- Searches current directory recursively.
 opt.wildignore = { "*.o,*~,*.pyc" }
 opt.wildmenu = true -- Display all matches when tab complete.
@@ -36,26 +10,30 @@ opt.hidden = true -- Needed to keep multiple buffers open
 opt.lazyredraw = true
 opt.list = true -- show invisible characters
 opt.listchars = {
-	eol = "↲",
-	tab = "» ",
-	trail = "·",
-	extends = "<",
-	precedes = ">",
-	conceal = "┊",
-	nbsp = "␣",
+        eol = "↲",
+        tab = "» ",
+        trail = "·",
+        extends = "<",
+        precedes = ">",
+        conceal = "┊",
+        nbsp = "␣",
 }
 opt.undofile = true
-opt.laststatus=3
+opt.laststatus = 3
+opt.cmdheight = 0
 opt.ruler = false
 opt.pumheight = 10 -- Makes Popup smaller
 opt.termguicolors = true -- 256 colors
--- opt.expandtab = true          -- Change tabs to spaces
+opt.expandtab = true -- Change tabs to spaces
 opt.cul = true -- cursor line
 opt.ruler = true -- set Ruler
 opt.background = "dark" -- Dark background
 opt.encoding = "utf-8" -- Character encoding
 opt.mouse = "nicr" -- Mouse scrolling support
+opt.mousemodel = "" -- disable right click
 opt.clipboard = "unnamedplus" -- Copy/paste anywhere
+opt.scrolloff = 8
+opt.colorcolumn = "80"
 opt.showmode = false
 opt.conceallevel = 2
 opt.concealcursor = "nc"
@@ -65,11 +43,11 @@ opt.foldtext = [[ substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g
 opt.fillchars = { fold = " " }
 opt.foldnestmax = 3
 opt.foldminlines = 1
-opt.shortmess:append("sI")
+-- opt.shortmess:append("sI") -- Removes vim intro
 opt.whichwrap:append("<>[]hl")
 opt.splitright = true
 opt.splitbelow = true
-
+--
 -- Global options
 g.tabstop = 2
 g.shiftwidth = 2

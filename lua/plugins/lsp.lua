@@ -40,7 +40,7 @@ M.nullLs = function()
 					group = augroup,
 					buffer = bufnr,
 					callback = function()
-					-- 	lsp_formatting(bufnr)
+						vim.lsp.buf.format({ bufnr = bufnr })
 					end,
 				})
 			end
@@ -50,49 +50,49 @@ end
 
 function M.lsp_icons()
 	return {
-	  Namespace = "",
-	  Text = " ",
-	  Method = " ",
-	  Function = " ",
-	  Constructor = " ",
-	  Field = "ﰠ ",
-	  Variable = " ",
-	  Class = "ﴯ ",
-	  Interface = " ",
-	  Module = " ",
-	  Property = "ﰠ ",
-	  Unit = "塞 ",
-	  Value = " ",
-	  Enum = " ",
-	  Keyword = " ",
-	  Snippet = " ",
-	  Color = " ",
-	  File = " ",
-	  Reference = " ",
-	  Folder = " ",
-	  EnumMember = " ",
-	  Constant = " ",
-	  Struct = "פּ ",
-	  Event = " ",
-	  Operator = " ",
-	  TypeParameter = " ",
-	  Table = "",
-	  Object = " ",
-	  Tag = "",
-	  Array = "[]",
-	  Boolean = " ",
-	  Number = " ",
-	  Null = "ﳠ",
-	  String = " ",
-	  Calendar = "",
-	  Watch = " ",
-	  Package = "",
-	  Copilot = " ",
-}
+		Namespace = "",
+		Text = " ",
+		Method = " ",
+		Function = " ",
+		Constructor = " ",
+		Field = "ﰠ ",
+		Variable = " ",
+		Class = "ﴯ ",
+		Interface = " ",
+		Module = " ",
+		Property = "ﰠ ",
+		Unit = "塞 ",
+		Value = " ",
+		Enum = " ",
+		Keyword = " ",
+		Snippet = " ",
+		Color = " ",
+		File = " ",
+		Reference = " ",
+		Folder = " ",
+		EnumMember = " ",
+		Constant = " ",
+		Struct = "פּ ",
+		Event = " ",
+		Operator = " ",
+		TypeParameter = " ",
+		Table = "",
+		Object = " ",
+		Tag = "",
+		Array = "[]",
+		Boolean = " ",
+		Number = " ",
+		Null = "ﳠ",
+		String = " ",
+		Calendar = "",
+		Watch = " ",
+		Package = "",
+		Copilot = " ",
+	}
 end
 
 M.lspconfig = function()
-	local servers = { "pyright", "sumneko_lua", "rust_analyzer", "html", "clangd" }
+	local servers = { "pyright", "lua_ls", "rust_analyzer", "clangd" } --"html"
 	local nmap = require("utils").nmap
 	local on_attach = function(_, bufnr)
 		-- Mappings.
@@ -142,9 +142,6 @@ M.lspconfig = function()
 	for _, lsp in pairs(servers) do
 		require("lspconfig")[lsp].setup({
 			on_attach = on_attach,
-			flags = {
-				debounce_text_changes = 150,
-			},
 		})
 	end
 
@@ -154,7 +151,7 @@ M.lspconfig = function()
 	table.insert(runtime_path, "lua/plugins/?.lua")
 
 	local lsp = require("lspconfig")
-	lsp["sumneko_lua"].setup({
+	lsp["lua_ls"].setup({
 		settings = {
 			Lua = {
 				runtime = {
