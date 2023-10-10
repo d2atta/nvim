@@ -16,28 +16,28 @@ nmap({ "[q", ":cp<CR>" })
 nmap({ "<C-a>", "<cmd>%y <CR>" })
 -- open file_browser with the path of the current buffer
 nmap({
-        "<C-n>",
-        function()
-                require("lir.float").toggle()
-        end,
+	"<C-n>",
+	function()
+		require("lir.float").toggle()
+	end,
 })
 nmap({
-        "<leader>sb",
-        function()
-                require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
-        end,
+	"<leader>sb",
+	function()
+		require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
+	end,
 })
 nmap({
-        "<leader><space>",
-        function()
-                require("telescope.builtin").find_files(require("telescope.themes").get_dropdown())
-        end,
+	"<leader><space>",
+	function()
+		require("telescope.builtin").find_files(require("telescope.themes").get_dropdown())
+	end,
 })
 nmap({
-        "<leader>fp",
-        function()
-                require("telescope.builtin").find_files(require("telescope.themes").get_ivy({ cwd = "~/.config/nvim" }))
-        end,
+	"<leader>fp",
+	function()
+		require("telescope.builtin").find_files(require("telescope.themes").get_ivy({ cwd = "~/.config/nvim" }))
+	end,
 })
 nmap({ "<leader>sf", ":Telescope current_buffer_fuzzy_find <CR>" })
 nmap({ "<leader>sh", ":Telescope help_tags <CR>" })
@@ -71,3 +71,62 @@ nmap({ "<leader>tk", "<C-w>t<C-w>K" })
 -- Visual moving
 vmap({ "J", ":m '>+1<CR>gv=gv'" })
 vmap({ "K", ":m '<-2<CR>gv=gv'" })
+
+-- Terminal
+-- toggle in terminal mode
+tmap({
+	"<A-i>",
+	function()
+		require("nvterm.terminal").toggle("float")
+	end,
+})
+tmap({
+	"<A-h>",
+	function()
+		require("nvterm.terminal").toggle("horizontal")
+	end,
+})
+
+tmap({
+	"<A-v>",
+	function()
+		require("nvterm.terminal").toggle("vertical")
+	end,
+})
+
+-- toggle in normal mode
+nmap({
+	"<A-i>",
+	function()
+		require("nvterm.terminal").toggle("float")
+	end,
+})
+
+nmap({
+	"<A-h>",
+	function()
+		require("nvterm.terminal").toggle("horizontal")
+	end,
+})
+
+nmap({
+	"<A-v>",
+	function()
+		require("nvterm.terminal").toggle("vertical")
+	end,
+})
+
+-- new
+nmap({
+	"<leader>h",
+	function()
+		require("nvterm.terminal").new("horizontal")
+	end,
+})
+
+nmap({
+	"<leader>v",
+	function()
+		require("nvterm.terminal").new("vertical")
+	end,
+})

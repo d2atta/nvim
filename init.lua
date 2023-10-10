@@ -16,7 +16,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- Theme
-vim.g.theme = "palenight"
+vim.g.theme = "github-dark"
 
 --{{{ Package manager
 local plugins = {
@@ -32,7 +32,6 @@ local plugins = {
 	},
 	-- Icons
 	{ "kyazdani42/nvim-web-devicons", lazy = true },
-
 	-- Find files
 	{
 		"nvim-telescope/telescope.nvim",
@@ -41,6 +40,9 @@ local plugins = {
 		config = function()
 			require("plugins").telescope()
 		end,
+		dependencies = {
+			"nvim-treesitter/playground",
+		},
 	},
 	{
 		"tamago324/lir.nvim",
@@ -49,12 +51,11 @@ local plugins = {
 			require("plugins").lir()
 		end,
 	},
-
 	-- lsp
 	{
 		"neovim/nvim-lspconfig",
 		module = "lspconfig",
-		ft = { "python", "lua", "rust" },
+		ft = { "python", "lua", "sh", "cpp", "markdown" },
 		config = function()
 			require("plugins.lsp").lspconfig()
 		end,
@@ -63,7 +64,8 @@ local plugins = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
-			"lewis6991/gitsigns.nvim",
+			"aspeddro/cmp-pandoc.nvim",
+			{ "lewis6991/gitsigns.nvim", config = true },
 			{
 				"hrsh7th/nvim-cmp",
 				config = function()
@@ -71,9 +73,11 @@ local plugins = {
 				end,
 			},
 			{
-				"jose-elias-alvarez/null-ls.nvim",
+				"stevearc/conform.nvim",
+				event = { "BufWritePre" },
+				cmd = { "ConformInfo" },
 				config = function()
-					require("plugins.lsp").nullLs()
+					require("plugins.lsp").conform()
 				end,
 			},
 		},
@@ -81,7 +85,7 @@ local plugins = {
 	-- copilot
 	{
 		"zbirenbaum/copilot-cmp",
-		lazy = true,
+		event = { "BufReadPost", "BufNewFile" },
 		config = function(_, opts)
 			local copilot_cmp = require("copilot_cmp")
 			copilot_cmp.setup(opts)
@@ -110,13 +114,20 @@ local plugins = {
 			require("utils").set_theme()
 		end,
 	},
+	-- Terminal
+	{
+		"NvChad/nvterm",
+		lazy = true,
+		config = true,
+	},
 	-- Misc
 	{
 		"lukas-reineke/indent-blankline.nvim",
+		-- main = "ibl",
+		version = "2.20.7",
 		event = { "BufReadPost", "BufNewFile" },
-		lazy = true,
 		config = function()
-			require("plugins").blankline()
+			require("plugins").indent()
 		end,
 	},
 	{

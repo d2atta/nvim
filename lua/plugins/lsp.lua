@@ -1,51 +1,24 @@
 local M = {}
 
-M.nullLs = function()
-	local null_ls = require("null-ls")
-	local formatting = null_ls.builtins.formatting
-	local diagnostics = null_ls.builtins.diagnostics
-
-	local sources = {
-		diagnostics.shellcheck.with({ diagnostics_format = "#{m} [#{c}]" }),
-		formatting.black.with({ extra_args = { "--fast" } }),
-		formatting.stylua,
-		formatting.rustfmt,
-		-- formatting.clang_format,
-		-- completion.luasnip,
-		-- formatting.prettier.with({ extra_args = { "--no-semi", "--single" } }),
-		-- formatting.codespell,
+M.conform = function()
+	local conform = require("conform")
+	local opts = {
+		formatters_by_ft = {
+			lua = { "stylua" },
+			python = { "black" },
+			rust = { "rustfmt" },
+			shell = { "shellcheck" },
+			json = { "jq" },
+			toml = { "taplo" },
+			yaml = { "yamlfix" },
+		},
+		format_on_save = {
+			-- These options will be passed to conform.format()
+			timeout_ms = 500,
+			lsp_fallback = true,
+		},
 	}
-	-- local lsp_formatting = function(bufnr)
-	-- 	vim.lsp.buf.format({
-	-- 		filter = function(clients)
-	-- 			-- filter out clients that you don't want to use
-	-- 			return vim.tbl_filter(function(client)
-	-- 				return client.name ~= "rust_analyzer"
-	-- 			end, clients)
-	-- 		end,
-	-- 		bufnr = bufnr,
-	-- 	})
-	-- end
-
-	-- if you want to set up formatting on save, you can use this as a callback
-	local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-	null_ls.setup({
-		debug = false,
-		sources = sources,
-		-- format on save
-		on_attach = function(client, bufnr)
-			if client.supports_method("textDocument/formatting") then
-				vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
-				vim.api.nvim_create_autocmd("BufWritePre", {
-					group = augroup,
-					buffer = bufnr,
-					callback = function()
-						vim.lsp.buf.format({ bufnr = bufnr })
-					end,
-				})
-			end
-		end,
-	})
+	conform.setup(opts)
 end
 
 function M.lsp_icons()
