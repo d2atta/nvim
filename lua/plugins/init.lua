@@ -20,7 +20,7 @@ M.telescope = function()
 				"--column",
 				"--smart-case",
 			},
-			prompt_prefix = "   ",
+			prompt_prefix = "🔍 ",
 			selection_caret = "  ",
 			entry_prefix = "  ",
 			initial_mode = "insert",
@@ -41,6 +41,23 @@ M.telescope = function()
 			qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
 			-- Developer configurations: Not meant for general override
 			buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
+		},
+		pickers = {
+			find_files = {
+				theme = "dropdown",
+			},
+			buffers = {
+				theme = "dropdown",
+				previewer = false,
+			},
+		},
+		extensions = {
+			file_browser = {
+				dir_icon = "",
+				display_stat = { date = false, size = true, mode = true },
+				hijack_netrw = true,
+				theme = "ivy",
+			},
 		},
 	}
 	tl_config.setup(default)
@@ -146,73 +163,49 @@ M.twilight = function()
 end
 
 M.indent = function()
-	local present, indent = pcall(require, "indent_blankline")
+	local present, indent = pcall(require, "ibl")
 	if not present then
 		return
 	end
 	local opts = {
-		indentLine_enabled = 1,
-		filetype_exclude = {
-			"help",
-			"terminal",
-			"lazy",
-			"lspinfo",
-			"TelescopePrompt",
-			"TelescopeResults",
-			"mason",
-			"",
+		exclude = {
+			filetypes = { "lazy", "lspinfo" },
 		},
-		buftype_exclude = { "terminal" },
-		-- show_trailing_blankline_indent = false,
-		-- show_first_indent_level = false,
-		space_char_blankline = " ",
-		show_end_of_line = true,
-		show_current_context = true,
-		show_current_context_start = true,
+		whitespace = { highlight = { "Whitespace", "NonText" } },
 	}
 	indent.setup(opts)
 end
 
-M.lir = function()
-	local present, lir_conf = pcall(require, "lir")
+M.oil = function()
+	local present, oil_conf = pcall(require, "oil")
 	if not present then
 		return
 	end
-	local actions = require("lir.actions")
 	local options = {
-		show_hidden_files = false,
-		devicons = {
-			enable = true,
-			highlight_dir_name = true,
-		},
-		mappings = {
-			["l"] = actions.edit,
-			["<C-s>"] = actions.split,
-			["<C-v>"] = actions.vsplit,
-			["<C-t>"] = actions.tabedit,
-
-			["h"] = actions.up,
-			["q"] = actions.quit,
-			["o"] = actions.mkdir,
-			["a"] = actions.newfile,
-			["r"] = actions.rename,
-
-			["@"] = actions.cd,
-			["y"] = actions.yank_path,
-			["."] = actions.toggle_show_hidden,
-			["d"] = actions.delete,
-		},
 		float = {
-			winblend = 0,
+			padding = 2,
+			max_width = 70,
+			max_height = 20,
+			border = "rounded",
 		},
-		hide_cursor = true,
-		on_init = function()
-			-- echo cwd
-			-- vim.api.nvim_echo({ { vim.fn.expand("%:p"), "Normal" } }, false, {})
-			vim.b.ministatusline_disable = true
-		end,
+		win_options = {
+			winblend = 2,
+		},
+		use_default_keymaps = false,
+		keymaps = {
+			["g?"] = "actions.show_help",
+			["<CR>"] = "actions.select",
+			["<C-h>"] = "actions.select_split",
+			["<C-c>"] = "actions.close",
+			["<C-l>"] = "actions.refresh",
+			["<C-p>"] = "actions.parent",
+			["~"] = "actions.tcd",
+			["gs"] = "actions.change_sort",
+			["gx"] = "actions.open_external",
+			["g."] = "actions.toggle_hidden",
+		},
 	}
-	lir_conf.setup(options)
+	oil_conf.setup(options)
 end
 
 M.Luasnip = function()
@@ -232,13 +225,48 @@ M.Luasnip = function()
 	require("luasnip.loaders.from_snipmate").lazy_load()
 end
 
-M.mini = function()
-	require("mini.statusline").setup({})
-	require("mini.tabline").setup()
-	vim.defer_fn(function()
-		require("mini.comment").setup({})
-		require("mini.pairs").setup({})
-	end, 0)
+M.mini_statusline = function()
+	local section_location = function(args)
+		if MiniStatusline.is_truncated(args.trunc_width) then
+			return "[%2l/%2L]"
+		else
+			return "[%2l/%2L] %y"
+		end
+	end
+
+	local get_filetype_icon = function()
+		local filetype = vim.bo.filetype
+		if filetype == "" then
+			return ""
+		end
+		-- Have this `require()` here to not depend on plugin initialization order
+		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+		if not has_devicons then
+			return ""
+		end
+		return (devicons.get_icon(vim.fn.expand("%:t"), nil, { default = true }))
+	end
+	local active_content = function()
+		local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 85 })
+		local git = MiniStatusline.section_git({ trunc_width = 40 })
+		local diag_signs = { ERROR = " ", WARN = " ", INFO = " ", HINT = " " }
+		local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75, signs = diag_signs, icon = "" })
+		local filename = MiniStatusline.section_filename({ trunc_width = 140 })
+		local fileicon = get_filetype_icon()
+		local location = section_location({ trunc_width = 75 })
+
+		return MiniStatusline.combine_groups({
+			{ hl = mode_hl, strings = { mode } },
+			{ hl = "MiniStatuslineDevinfo", strings = { git } },
+			"%=",
+			{ hl = "MiniStatuslineFileinfo", strings = { fileicon, filename } },
+			"%=", -- End left alignment
+			{ hl = "MiniStatuslineDevinfo", strings = { diagnostics, location } },
+		})
+	end
+	require("mini.statusline").setup({
+		content = { active = active_content, inactive = nil },
+	})
 end
 
 return M

@@ -1,26 +1,5 @@
 local M = {}
 
-M.conform = function()
-	local conform = require("conform")
-	local opts = {
-		formatters_by_ft = {
-			lua = { "stylua" },
-			python = { "black" },
-			rust = { "rustfmt" },
-			shell = { "shellcheck" },
-			json = { "jq" },
-			toml = { "taplo" },
-			yaml = { "yamlfix" },
-		},
-		format_on_save = {
-			-- These options will be passed to conform.format()
-			timeout_ms = 500,
-			lsp_fallback = true,
-		},
-	}
-	conform.setup(opts)
-end
-
 function M.lsp_icons()
 	return {
 		Namespace = "",
@@ -65,7 +44,7 @@ function M.lsp_icons()
 end
 
 M.lspconfig = function()
-	local servers = { "pyright", "lua_ls", "rust_analyzer", "clangd" } --"html"
+	local servers = { "pyright", "lua_ls", "rust_analyzer", "clangd", "tailwindcss", "astro" } --"html"
 	local nmap = require("utils").nmap
 	local on_attach = function(_, bufnr)
 		-- Mappings.
@@ -80,7 +59,7 @@ M.lspconfig = function()
 		nmap({ "gd", vim.lsp.buf.definition, { buffer = bufnr } })
 		nmap({ "gi", vim.lsp.buf.implementation, { buffer = bufnr } })
 		nmap({ "gr", vim.lsp.buf.references, { buffer = bufnr } })
-		nmap({ "<space>D", vim.lsp.buf.type_definition, { buffer = bufnr } })
+		nmap({ "<space>t", vim.lsp.buf.type_definition, { buffer = bufnr } })
 		nmap({ "<space>rn", vim.lsp.buf.rename, { buffer = bufnr } })
 		nmap({ "<space>ca", vim.lsp.buf.code_action, { buffer = bufnr } })
 
@@ -112,9 +91,11 @@ M.lspconfig = function()
 	-- 	end,
 	-- })
 
+	local lspconfig = require("lspconfig")
 	for _, lsp in pairs(servers) do
-		require("lspconfig")[lsp].setup({
+		lspconfig[lsp].setup({
 			on_attach = on_attach,
+			capabilities = require("blink.cmp").get_lsp_capabilities(),
 		})
 	end
 
@@ -123,8 +104,7 @@ M.lspconfig = function()
 	table.insert(runtime_path, "lua/mini/?.lua")
 	table.insert(runtime_path, "lua/plugins/?.lua")
 
-	local lsp = require("lspconfig")
-	lsp["lua_ls"].setup({
+	lspconfig["lua_ls"].setup({
 		settings = {
 			Lua = {
 				runtime = {
@@ -146,6 +126,34 @@ M.lspconfig = function()
 			},
 		},
 	})
+end
+
+M.conform = function()
+	local conform = require("conform")
+	local opts = {
+		formatters_by_ft = {
+			lua = { "stylua" },
+			python = { "black" },
+			rust = { "rustfmt" },
+			shell = { "shellcheck" },
+			json = { "jq" },
+			javascript = { "prettier" },
+			typescript = { "prettier" },
+			astro = { "prettier" },
+			html = { "prettier" },
+			css = { "prettier" },
+			scss = { "prettier" },
+			markdown = { "prettier" },
+			yaml = { "prettier" },
+		},
+		notify_on_error = false,
+		format_on_save = {
+			-- These options will be passed to conform.format()
+			timeout_ms = 500,
+			lsp_fallback = true,
+		},
+	}
+	conform.setup(opts)
 end
 
 return M

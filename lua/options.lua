@@ -49,7 +49,7 @@ opt.foldminlines = 1
 opt.whichwrap:append("<>[]hl")
 opt.splitright = true
 opt.splitbelow = true
---
+
 -- Global options
 g.tabstop = 2
 g.shiftwidth = 2
@@ -62,3 +62,5 @@ g.mapleader = " "
 g.maplocalleader = ","
 g.loaded_python_provider = 0
 g.python3_host_prog = "/usr/bin/python"
+g.loaded_netrw = 1
+g.loaded_netrwPlugin = 1
