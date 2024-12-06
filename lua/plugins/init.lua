@@ -20,7 +20,7 @@ M.telescope = function()
 				"--column",
 				"--smart-case",
 			},
-			prompt_prefix = "🔍 ",
+			prompt_prefix = "   ",
 			selection_caret = "  ",
 			entry_prefix = "  ",
 			initial_mode = "insert",
@@ -41,6 +41,9 @@ M.telescope = function()
 			qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
 			-- Developer configurations: Not meant for general override
 			buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
+                        mappings = {
+                              n = { ["q"] = require("telescope.actions").close },
+                            },
 		},
 		pickers = {
 			find_files = {
@@ -51,6 +54,7 @@ M.telescope = function()
 				previewer = false,
 			},
 		},
+                extensions_list = {"fzf", "file_browser"},
 		extensions = {
 			file_browser = {
 				dir_icon = "",

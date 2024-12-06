@@ -38,8 +38,33 @@ nmap({ "<leader>tk", "<C-w>t<C-w>K" })
 vmap({ "J", ":m '>+1<CR>gv=gv'" })
 vmap({ "K", ":m '<-2<CR>gv=gv'" })
 
-nmap({ "<leader>tc", require("utils").change_theme })
+nmap({ "<leader>tc", require("utils").change_theme,
+        {desc = "[T]heme [C]hange"} })
 nmap({ "<leader>r", require("utils").execute })
+
+-- Telescope
+nmap({ "<leader>sh", "<cmd>Telescope help_tags<cr>", {desc = "[S]earch [H]elp"} })
+nmap({ "<leader>sk", "<cmd>Telescope keymaps<cr>", {desc = "[S]earch [K]eymaps"} })
+nmap({ "<leader>sf", "<cmd>Telescope find_files<cr>", {desc = "[S]earch [K]eymaps"} })
+nmap({ "<leader>sg", "<cmd>Telescope live_grep<cr>",
+        {desc = "[S]earch by [G]rep"} })
+nmap({ "<leader>sw", "<cmd>Telescope grep_string<cr>",
+        {desc = "[S]earch current [W]ord"} })
+nmap({ "<leader>s.", "<cmd>Telescope oldfiles<cr>",
+        {desc = '[S]earch Recent Files ("." for repeat)'} })
+nmap({ "<leader><leader>", "<cmd>Telescope buffers<cr>",
+        { desc = "[ ] Find existing buffers"} })
+nmap({ "<leader>fb", "<cmd>Telescope file_browser<cr>",
+        {desc = "[F]ile [B]rowser"} })
+
+-- Terminal
+tmap({
+        "<leader>tt",
+        function()
+                require("nvterm.terminal").toggle("float")
+        end,
+        desc = "toggle in terminal mode"
+})
 
 -- vmap({ "<leader>]", ":Gen <CR>" })
 -- open file_browser with the path of the current buffer
@@ -51,53 +76,10 @@ nmap({ "<leader>r", require("utils").execute })
 -- 	end,
 -- })
 
--- nmap({ "<C-n>", ":Telescope file_browser path=%:p:h select_buffer=true<CR>" })
-
 -- nmap({ "<leader>a", ":Neorg journal today <CR>" })
 -- nmap({ "<leader>y", ":Neorg journal yesterday <CR>" })
--- nmap({
--- 	"<leader>sb",
--- 	function()
--- 		require("telescope.builtin").buffers(require("telescope.themes").get_dropdown({ previewer = false }))
--- 	end,
--- })
--- nmap({
--- 	"<leader><space>",
--- 	function()
--- 		require("telescope.builtin").find_files(require("telescope.themes").get_dropdown({ winblend = 10 }))
--- 	end,
--- })
--- nmap({
--- 	"<leader>fp",
--- 	function()
--- 		require("telescope.builtin").find_files(
--- 			require("telescope.themes").get_ivy({ cwd = "~/.config/nvim", prompt_title = "Neovim Config" })
--- 		)
--- 	end,
--- })
--- nmap({
--- 	"<leader>sf",
--- 	function()
--- 		require("telescope.builtin").current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
--- 			winblend = 10,
--- 			previewer = false,
--- 		}))
--- 	end,
--- })
--- nmap({
--- 	"<leader>s/",
--- 	function()
--- 		require("telescope.builtin").live_grep({
--- 			grep_open_files = true,
--- 			prompt_title = "Live Grep in Open Files",
--- 		})
--- 	end,
--- })
--- nmap({ "<leader>sh", ":Telescope help_tags <CR>" })
--- nmap({ "<leader>sd", ":Telescope grep_string <CR>" })
--- nmap({ "<leader>sp", ":Telescope live_grep <CR>" })
--- nmap({ "<leader>?", ":Telescope oldfiles <CR>" })
 -- nmap({ "<leader>z", ":Twilight <CR>" })
+
 -- Trouble
 -- nmap({
 -- 	"<leader>xx",
@@ -124,61 +106,3 @@ nmap({ "<leader>r", require("utils").execute })
 -- 	end,
 -- })
 
--- Terminal
--- toggle in terminal mode
--- tmap({
--- 	"<A-i>",
--- 	function()
--- 		require("nvterm.terminal").toggle("float")
--- 	end,
--- })
--- tmap({
--- 	"<A-h>",
--- 	function()
--- 		require("nvterm.terminal").toggle("horizontal")
--- 	end,
--- })
---
--- tmap({
--- 	"<A-v>",
--- 	function()
--- 		require("nvterm.terminal").toggle("vertical")
--- 	end,
--- })
---
--- -- toggle in normal mode
--- nmap({
--- 	"<A-i>",
--- 	function()
--- 		require("nvterm.terminal").toggle("float")
--- 	end,
--- })
---
--- nmap({
--- 	"<A-h>",
--- 	function()
--- 		require("nvterm.terminal").toggle("horizontal")
--- 	end,
--- })
---
--- nmap({
--- 	"<A-v>",
--- 	function()
--- 		require("nvterm.terminal").toggle("vertical")
--- 	end,
--- })
---
--- -- new
--- nmap({
--- 	"<leader>h",
--- 	function()
--- 		require("nvterm.terminal").new("horizontal")
--- 	end,
--- })
---
--- nmap({
--- 	"<leader>v",
--- 	function()
--- 		require("nvterm.terminal").new("vertical")
--- 	end,
--- })
