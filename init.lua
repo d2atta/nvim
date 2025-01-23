@@ -23,25 +23,6 @@ vim.g.maplocalleader = " "
 -- Package manager
 local plugins = {
 	{ "nvim-lua/plenary.nvim", lazy = true },
-	-- colorscheme
-	{
-		"echasnovski/mini.base16",
-		event = { "VimEnter" },
-		priority = 100,
-		config = function()
-			require("utils").set_theme()
-		end,
-	},
-	-- Tabline
-	{ "echasnovski/mini.tabline", event = { "VimEnter" }, config = true },
-	-- statusline
-	{
-		"echasnovski/mini.statusline",
-		event = { "VimEnter" },
-		config = function()
-			require("plugins").mini_statusline()
-		end,
-	},
 	-- code highlighting
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -51,27 +32,49 @@ local plugins = {
 			require("plugins").treesitter()
 		end,
 	},
+	-- Mini express
 	{
-		"lukas-reineke/indent-blankline.nvim",
-		main = "ibl",
+		"echasnovski/mini.nvim",
 		event = { "BufReadPost" },
 		config = function()
-			require("plugins").indent()
+			-- Icons
+			require("mini.icons").setup()
+
+			-- colorscheme
+			require("utils").set_theme()
+			require("plugins.mini").mini_hipatterns()
+
+			-- Tabline
+			require("mini.tabline").setup()
+
+			-- statusline
+			require("plugins.mini").mini_statusline()
+
+			-- Indentscope
+			require("mini.indentscope").setup()
+
+			-- Git
+			require("mini.diff").setup()
+			require("mini.git").setup()
+
+			-- Editing
+			-- require("mini.bufremove").setup()
+			require("mini.bracketed").setup()
+			require("mini.pairs").setup()
+			require("mini.trailspace").setup()
+
+			-- Telescope
+			require("mini.fuzzy").setup()
+
+			-- Notification
+			require("mini.notify").setup()
 		end,
 	},
-	-- Icons
-	{ "nvim-tree/nvim-web-devicons", lazy = true },
 	-- Find files
 	{
 		"nvim-telescope/telescope.nvim",
+		event = "BufReadPost",
 		dependencies = {
-			{
-				"nvim-telescope/telescope-fzf-native.nvim",
-				build = "make",
-				cond = function()
-					return vim.fn.executable("fzf") == 1
-				end,
-			},
 			"nvim-telescope/telescope-file-browser.nvim",
 		},
 		config = function()
@@ -88,18 +91,10 @@ local plugins = {
 			require("plugins.lsp").lspconfig()
 		end,
 		dependencies = {
-			{ "j-hui/fidget.nvim", opts = {} },
 			{
 				"saghen/blink.cmp",
 				lazy = false, -- lazy loading handled internally
 				version = "v0.*",
-				dependencies = {
-					"saghen/blink.compat",
-					"hrsh7th/cmp-nvim-lua",
-					"hrsh7th/cmp-nvim-lsp",
-					"hrsh7th/cmp-buffer",
-					"hrsh7th/cmp-path",
-				},
 				config = function()
 					require("plugins.cmp")
 				end,
@@ -114,65 +109,8 @@ local plugins = {
 			},
 		},
 	},
-	-- git
-	{ "echasnovski/mini.diff", event = "BufReadPost", config = true },
-	{ "echasnovski/mini-git", event = "BufReadPost", config = true, main = "mini.git" },
-	-- pairs
-	{ "echasnovski/mini.pairs", event = { "BufReadPost" }, config = true },
 	-- Terminal
 	{ "NvChad/nvterm", config = true },
-	-- AI
-	{
-		"yetone/avante.nvim",
-		event = "VeryLazy",
-		lazy = false,
-		version = false,
-		build = "make",
-		opts = {
-			provider = "ollama",
-			vendors = {
-				ollama = {
-					api_key_name = "",
-					endpoint = "127.0.0.1:11434/v1",
-					model = "smollm2:latest",
-					parse_curl_args = function(opts, code_opts)
-						return {
-							url = opts.endpoint .. "/chat/completions",
-							headers = {
-								["Accept"] = "application/json",
-								["Content-Type"] = "application/json",
-							},
-							body = {
-								model = opts.model,
-								messages = require("avante.providers").copilot.parse_messages(code_opts),
-								max_tokens = 2048,
-								stream = true,
-							},
-						}
-					end,
-					parse_response_data = function(data_stream, event_state, opts)
-						require("avante.providers").copilot.parse_response(data_stream, event_state, opts)
-					end,
-				},
-			},
-		},
-		dependencies = {
-
-			"stevearc/dressing.nvim",
-			"MunifTanjim/nui.nvim",
-			{
-				"OXY2DEV/markview.nvim",
-				enabled = true,
-				lazy = false,
-				ft = { "markdown", "norg", "rmd", "org", "vimwiki", "Avante" },
-				opts = {
-					filetypes = { "markdown", "norg", "rmd", "org", "vimwiki", "Avante" },
-					buf_ignore = {},
-					max_length = 99999,
-				},
-			},
-		},
-	},
 }
 
 -- Lazy

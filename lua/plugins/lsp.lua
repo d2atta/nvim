@@ -1,46 +1,4 @@
 local M = {}
-function M.lsp_icons()
-	return {
-		Namespace = "",
-		Text = " ",
-		Method = " ",
-		Function = " ",
-		Constructor = " ",
-		Field = "ﰠ ",
-		Variable = " ",
-		Class = "ﴯ ",
-		Interface = " ",
-		Module = " ",
-		Property = "ﰠ ",
-		Unit = "塞 ",
-		Value = " ",
-		Enum = " ",
-		Keyword = " ",
-		Snippet = " ",
-		Color = " ",
-		File = " ",
-		Reference = " ",
-		Folder = " ",
-		EnumMember = " ",
-		Constant = " ",
-		Struct = "פּ ",
-		Event = " ",
-		Operator = " ",
-		TypeParameter = " ",
-		Table = "",
-		Object = " ",
-		Tag = "",
-		Array = "[]",
-		Boolean = " ",
-		Number = " ",
-		Null = "ﳠ",
-		String = " ",
-		Calendar = "",
-		Watch = " ",
-		Package = "",
-		Copilot = " ",
-	}
-end
 
 M.lspconfig = function()
 	local servers = { "pyright", "lua_ls", "rust_analyzer", "clangd", "tailwindcss", "astro" } --"html"
@@ -62,7 +20,7 @@ M.lspconfig = function()
 		nmap({ "<space>rn", vim.lsp.buf.rename, { buffer = bufnr } })
 		nmap({ "<space>ca", vim.lsp.buf.code_action, { buffer = bufnr } })
 
-		vim.lsp.protocol.CompletionItemKind = M.lsp_icons()
+		vim.lsp.protocol.CompletionItemKind = MiniIcons.get
 		vim.opt.signcolumn = "auto:2"
 	end
 
@@ -115,12 +73,12 @@ M.lspconfig = function()
 				},
 				workspace = {
 					library = {
-                                                vim.fn.expand "$VIMRUNTIME/lua",
-                                                vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
+						vim.fn.expand("$VIMRUNTIME/lua"),
+						vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
 					},
 				},
-                                maxPreload = 100000,
-                                preloadFileSize = 10000,
+				maxPreload = 100000,
+				preloadFileSize = 10000,
 				telemetry = {
 					enable = false,
 				},

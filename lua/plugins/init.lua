@@ -28,7 +28,7 @@ M.telescope = function()
 			sorting_strategy = "ascending",
 			layout_strategy = "horizontal",
 			file_sorter = require("telescope.sorters").get_fuzzy_file,
-			generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
+			generic_sorter = require("mini.fuzzy").get_telescope_sorter,
 			path_display = { "truncate" },
 			winblend = 0,
 			border = {},
@@ -41,9 +41,9 @@ M.telescope = function()
 			qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
 			-- Developer configurations: Not meant for general override
 			buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
-                        mappings = {
-                              n = { ["q"] = require("telescope.actions").close },
-                            },
+			mappings = {
+				n = { ["q"] = require("telescope.actions").close },
+			},
 		},
 		pickers = {
 			find_files = {
@@ -54,7 +54,7 @@ M.telescope = function()
 				previewer = false,
 			},
 		},
-                extensions_list = {"fzf", "file_browser"},
+		extensions_list = { "file_browser" },
 		extensions = {
 			file_browser = {
 				dir_icon = "",
@@ -227,50 +227,6 @@ M.Luasnip = function()
 		end
 	end)
 	require("luasnip.loaders.from_snipmate").lazy_load()
-end
-
-M.mini_statusline = function()
-	local section_location = function(args)
-		if MiniStatusline.is_truncated(args.trunc_width) then
-			return "[%2l/%2L]"
-		else
-			return "[%2l/%2L] %y"
-		end
-	end
-
-	local get_filetype_icon = function()
-		local filetype = vim.bo.filetype
-		if filetype == "" then
-			return ""
-		end
-		-- Have this `require()` here to not depend on plugin initialization order
-		local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-		if not has_devicons then
-			return ""
-		end
-		return (devicons.get_icon(vim.fn.expand("%:t"), nil, { default = true }))
-	end
-	local active_content = function()
-		local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 85 })
-		local git = MiniStatusline.section_git({ trunc_width = 40 })
-		local diag_signs = { ERROR = " ", WARN = " ", INFO = " ", HINT = " " }
-		local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75, signs = diag_signs, icon = "" })
-		local filename = MiniStatusline.section_filename({ trunc_width = 140 })
-		local fileicon = get_filetype_icon()
-		local location = section_location({ trunc_width = 75 })
-
-		return MiniStatusline.combine_groups({
-			{ hl = mode_hl, strings = { mode } },
-			{ hl = "MiniStatuslineDevinfo", strings = { git } },
-			"%=",
-			{ hl = "MiniStatuslineFileinfo", strings = { fileicon, filename } },
-			"%=", -- End left alignment
-			{ hl = "MiniStatuslineDevinfo", strings = { diagnostics, location } },
-		})
-	end
-	require("mini.statusline").setup({
-		content = { active = active_content, inactive = nil },
-	})
 end
 
 return M

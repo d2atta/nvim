@@ -6,12 +6,12 @@ local vmap = require("utils").tmap
 tmap({ "<Esc>", "<C-\\><C-n>" })
 nmap({ "<C-s>", ":w<CR>" })
 nmap({ "<leader>nh", "<cmd>noh<CR>" })
-nmap({ "]b", "<cmd>bn<CR>" })
-nmap({ "[b", "<cmd>bN<CR>" })
+-- nmap({ "]b", "<cmd>bn<CR>" })
+-- nmap({ "[b", "<cmd>bN<CR>" })
+-- nmap({ "]q", ":cn<CR>" })
+-- nmap({ "[q", ":cp<CR>" })
 nmap({ "<C-w>", "<cmd>bw<CR>" })
 nmap({ "<leader>n", "<cmd>set rnu! nu!<CR>" })
-nmap({ "]q", ":cn<CR>" })
-nmap({ "[q", ":cp<CR>" })
 nmap({ "<C-a>", "<cmd>%y <CR>" })
 
 -- split window easily
@@ -38,44 +38,45 @@ nmap({ "<leader>tk", "<C-w>t<C-w>K" })
 vmap({ "J", ":m '>+1<CR>gv=gv'" })
 vmap({ "K", ":m '<-2<CR>gv=gv'" })
 
-nmap({ "<leader>tc", require("utils").change_theme,
-        {desc = "[T]heme [C]hange"} })
+nmap({ "<leader>tc", require("utils").change_theme, { desc = "[T]heme [C]hange" } })
 nmap({ "<leader>r", require("utils").execute })
 
 -- Telescope
-nmap({ "<leader>sh", "<cmd>Telescope help_tags<cr>", {desc = "[S]earch [H]elp"} })
-nmap({ "<leader>sk", "<cmd>Telescope keymaps<cr>", {desc = "[S]earch [K]eymaps"} })
-nmap({ "<leader>sf", "<cmd>Telescope find_files<cr>", {desc = "[S]earch [K]eymaps"} })
-nmap({ "<leader>sg", "<cmd>Telescope live_grep<cr>",
-        {desc = "[S]earch by [G]rep"} })
-nmap({ "<leader>sw", "<cmd>Telescope grep_string<cr>",
-        {desc = "[S]earch current [W]ord"} })
-nmap({ "<leader>s.", "<cmd>Telescope oldfiles<cr>",
-        {desc = '[S]earch Recent Files ("." for repeat)'} })
-nmap({ "<leader><leader>", "<cmd>Telescope buffers<cr>",
-        { desc = "[ ] Find existing buffers"} })
-nmap({ "<leader>fb", "<cmd>Telescope file_browser<cr>",
-        {desc = "[F]ile [B]rowser"} })
+nmap({ "<leader>sh", "<cmd>Telescope help_tags<cr>", { desc = "[S]earch [H]elp" } })
+nmap({ "<leader>sk", "<cmd>Telescope keymaps<cr>", { desc = "[S]earch [K]eymaps" } })
+nmap({ "<leader>sf", "<cmd>Telescope find_files<cr>", { desc = "[S]earch [K]eymaps" } })
+nmap({ "<leader>sg", "<cmd>Telescope live_grep<cr>", { desc = "[S]earch by [G]rep" } })
+nmap({ "<leader>sw", "<cmd>Telescope grep_string<cr>", { desc = "[S]earch current [W]ord" } })
+nmap({ "<leader>s.", "<cmd>Telescope oldfiles<cr>", { desc = '[S]earch Recent Files ("." for repeat)' } })
+nmap({ "<leader>sb", "<cmd>Telescope buffers<cr>", { desc = "[ ] Find existing buffers" } })
+nmap({ "<leader>fb", "<cmd>Telescope file_browser<cr>", { desc = "[F]ile [B]rowser" } })
 
 -- Terminal
 tmap({
-        "<leader>tt",
-        function()
-                require("nvterm.terminal").toggle("float")
-        end,
-        desc = "toggle in terminal mode"
+	"<leader>tt",
+	function()
+		require("nvterm.terminal").toggle("float")
+	end,
+	desc = "toggle in terminal mode",
+})
+
+nmap({
+	"<leader>tt",
+	function()
+		require("nvterm.terminal").toggle("float")
+	end,
+	desc = "toggle in terminal mode",
+})
+-- open file_browser with the path of the current buffer
+nmap({
+	"<C-n>",
+	function()
+		local oil = require("oil")
+		oil.toggle_float(oil.get_current_dir())
+	end,
 })
 
 -- vmap({ "<leader>]", ":Gen <CR>" })
--- open file_browser with the path of the current buffer
--- nmap({
--- 	"<C-n>",
--- 	function()
--- 		local oil = require("oil")
--- 		oil.toggle_float(oil.get_current_dir())
--- 	end,
--- })
-
 -- nmap({ "<leader>a", ":Neorg journal today <CR>" })
 -- nmap({ "<leader>y", ":Neorg journal yesterday <CR>" })
 -- nmap({ "<leader>z", ":Twilight <CR>" })
@@ -105,4 +106,3 @@ tmap({
 -- 		require("trouble").toggle("lsp_references")
 -- 	end,
 -- })
-
